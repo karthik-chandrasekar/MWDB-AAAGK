@@ -2,60 +2,64 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.FileHandler;
+import matlabcontrol.*;
 
-class DataNormalizer{
+
+class MyUtil{
     
-    public void getFilesInDir(String path, Logger logger) throws Exception
+    public File[] getFilesInDir(String path, Logger logger) throws Exception
     {
         File dirObj = new File(path);
         File[] inputFiles = dirObj.listFiles();
-        for(File inputFile:inputFiles)
-        {
-            readCsv(inputFile, logger);
-        }
+        return inputFiles;
     }
     
-    public void readCsv(File inputFile, Logger logger) throws Exception
-    {
-        List<String> headerList = new ArrayList<String>();
-        List<List<String>> valuesList;
-        
-        Double maxValue;
-        
-        Scanner scannerObj = new Scanner(inputFile);
-        for(String header : scannerObj.nextLine().split(","))
+     public HashMap<String, List<String>> readCsv(File inputFile, Logger logger) throws Exception
         {
-            headerList.add(header);
+            List<String> headerList = new ArrayList<String>();
+            List<List<String>> valuesList = new ArrayList(new ArrayList<String>());
+            Scanner scannerObj = new Scanner(inputFile);
+            
+            //Collect header list
+            headerList  = Arrays.asList(scannerObj.nextLine().split(","));
+                 
+            //Collect values list
+            while(scannerObj.hasNextLine())
+            {
+                valuesList.add(Arrays.asList(scannerObj.nextLine().split(",")));
+                
+            }
+            
+            //Map header to value
+            
+            return formHeaderValueHash(headerList, valuesList, inputFile, logger);
+          
         }
-        maxValue = findMax(scannerObj);     
-        logger.info(inputFile.getName() + "  " + "MaxValue " + maxValue);
-        valuesList = normalizeData(inputFile, maxValue);
-        formHeaderValueHash(headerList, valuesList, inputFile, logger);    
-    }
-    
-    public HashMap<String, List<String>> formHeaderValueHash(List<String> headerList, List<List<String>> valuesList, File inputFile, Logger logger) throws Exception
-    {
-        HashMap<String, List<String>> keyValueHash = new HashMap<String, List<String>>();
+     
+      public HashMap<String, List<String>> formHeaderValueHash(List<String> headerList, List<List<String>> valuesList, File inputFile, Logger logger) throws Exception
+      {
+          HashMap<String, List<String>> keyValueHash = new HashMap<String, List<String>>();
 
-        for(int i=0;i<headerList.size();i++)
-        {
-            keyValueHash.put(headerList.get(i), valuesList.get(i));
-        }
+          for(int i=0;i<headerList.size();i++)
+          {
+              keyValueHash.put(headerList.get(i), valuesList.get(i));
+          }
 
-        dumpInFile(headerList, valuesList, inputFile.getName());
-        return keyValueHash;
-    }
+          return keyValueHash;
+      }
     
-    public void dumpInFile(List<String> headerList, List<List<String>> valuesList, String outputFileName) throws Exception
+}
+     
+
+class DataNormalizer{
+    
+ 
+    public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
     {
         String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
         PrintWriter writer = new PrintWriter(outputDir+outputFileName+"_Normalized", "UTF-8");
         String outputString = "";
-        for(String header: headerList)
-        {
-            outputString = outputString + header + ',';
-        }
-        writer.println(outputString);
+   
 
         for(List<String> valueList: valuesList)
         {
@@ -69,24 +73,28 @@ class DataNormalizer{
         writer.close();
     }
 
-    public double findMax(Scanner scannerObj)
+  
+    
+    public double findMax(HashMap<String, List<String>> headerValueMap)
     {
-        double maxValue =0.0;
-        while(scannerObj.hasNextLine())
+        Double maxValue = 0.0;
+        int count;
+        
+        for(List<String> valueList : headerValueMap.values())
         {
-            int count = 0;
-            
-            for(String value : scannerObj.nextLine().split(","))
+            count = 0;
+            for(String value : valueList)
             {
-                count ++;
-                if (count > 2)
-                {
-                    if(Double.parseDouble(value) > maxValue)
-                    {
-                        maxValue = Double.parseDouble(value);
-                    }
-                }
+                 count ++;
+                 if (count > 2)
+                 {
+                     if(Double.parseDouble(value) > maxValue)
+                     {
+                         maxValue = Double.parseDouble(value);
+                     }
+                 }
             }
+            
         }
         return maxValue;
     }
@@ -96,13 +104,16 @@ class DataNormalizer{
         List<List<String>> valuesList = new ArrayList(new ArrayList<String>());
         List<String> valueList;
         Scanner scannerObj = new Scanner(inputFile);
-        scannerObj.nextLine();
+
+        //Add file headers
+        valuesList.add(Arrays.asList(scannerObj.nextLine().split(",")));
         
+        //Add file rows
         while(scannerObj.hasNextLine())
         {
             int count = 0;
             valueList = new ArrayList<String>();
-            
+          
             for(String value : scannerObj.nextLine().split(","))
             {
                 count ++;
@@ -117,23 +128,65 @@ class DataNormalizer{
             }
             valuesList.add(valueList);
         }
+        
         return valuesList;
     }
     
     public void main(Logger logger)
     {
+        
+        String dirPath = "/Users/karthikchandrasekar/Downloads/sampledata_P1_F14/Epidemic Simulation Datasets";
+        MyUtil muObj = new MyUtil();
+        Double maxValue = 0.0;
+        HashMap<String, List<String>> headerValueMap;
+        List<List<String>> valuesList;
+        
         try
-        {
-            String dirPath = "/Users/karthikchandrasekar/Downloads/sampledata_P1_F14/Epidemic Simulation Datasets";
-            getFilesInDir(dirPath, logger);
+        {       
+            for(File file : muObj.getFilesInDir(dirPath, logger))
+            {
+                headerValueMap = muObj.readCsv(file, logger);
+                maxValue = findMax(headerValueMap);
+                valuesList = normalizeData(file, maxValue);
+                dumpInFile(valuesList, file.getName());
+            }
         }
         catch(Exception e)
         {
-            
         }
-    }
-    
+    }    
 }
+
+class BandsGenerator{
+    public void main(Logger logger) throws MatlabConnectionException, MatlabInvocationException{
+        
+        //Create a proxy, which we will use to control MATLAB
+         MatlabProxyFactory factory = new MatlabProxyFactory();
+         MatlabProxy proxy = factory.getProxy();
+         
+        //set matlab path
+         String path = "cd('/Users/karthikchandrasekar/Documents/MATLAB')";
+         proxy.eval(path);
+         proxy.eval("JavaMatConn");
+         
+         /***
+          * Call matlab function to get back band values
+          * 
+          */
+         
+         proxy.disconnect();
+        
+    }
+}
+
+
+class EpidemicFileGenerator{
+    
+    public void main(Logger logger){
+        
+    }
+}
+
 
 public class EpidemicWordGenerator {
 
@@ -150,5 +203,13 @@ public static void main(String args[]) throws Exception
         //Data Normalizer
         DataNormalizer dn = new DataNormalizer();
         dn.main(logger);
+        
+        //Bands Generator
+        BandsGenerator bg = new BandsGenerator();
+        bg.main(logger);
+        
+        //Epidemic word file generator
+        EpidemicFileGenerator efg = new EpidemicFileGenerator();
+        efg.main(logger);
     }   
 }
