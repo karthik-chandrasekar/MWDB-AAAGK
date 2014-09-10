@@ -33,16 +33,16 @@ class DataNormalizer{
         formHeaderValueHash(headerList, valuesList, inputFile, logger);    
     }
     
-    public HashMap<String, List<String>> formHeaderValueHash(List<String> headerList, List<List<String>> valueList, File inputFile, Logger logger) throws Exception
+    public HashMap<String, List<String>> formHeaderValueHash(List<String> headerList, List<List<String>> valuesList, File inputFile, Logger logger) throws Exception
     {
         HashMap<String, List<String>> keyValueHash = new HashMap<String, List<String>>();
 
         for(int i=0;i<headerList.size();i++)
         {
-            keyValueHash.put(headerList.get(i), valueList.get(i));
+            keyValueHash.put(headerList.get(i), valuesList.get(i));
         }
 
-        dumpInFile(headerList, valueList, inputFile.getName());
+        dumpInFile(headerList, valuesList, inputFile.getName());
         return keyValueHash;
     }
     
@@ -152,4 +152,3 @@ public static void main(String args[]) throws Exception
         dn.main(logger);
     }   
 }
-
