@@ -14,7 +14,7 @@ class MyUtil{
         return inputFiles;
     }
     
-     public HashMap<String, List<String>> readCsv(File inputFile, Logger logger) throws Exception
+     public List<List<String>> readCsv(File inputFile, Logger logger) throws Exception
         {
             List<String> headerList = new ArrayList<String>();
             List<List<String>> valuesList = new ArrayList(new ArrayList<String>());
@@ -22,7 +22,8 @@ class MyUtil{
             
             //Collect header list
             headerList  = Arrays.asList(scannerObj.nextLine().split(","));
-                 
+            valuesList.add(headerList);     
+            
             //Collect values list
             while(scannerObj.hasNextLine())
             {
@@ -30,24 +31,8 @@ class MyUtil{
                 
             }
             
-            //Map header to value
-            
-            return formHeaderValueHash(headerList, valuesList, inputFile, logger);
-          
-        }
-     
-      public HashMap<String, List<String>> formHeaderValueHash(List<String> headerList, List<List<String>> valuesList, File inputFile, Logger logger) throws Exception
-      {
-          HashMap<String, List<String>> keyValueHash = new HashMap<String, List<String>>();
-
-          for(int i=0;i<headerList.size();i++)
-          {
-              keyValueHash.put(headerList.get(i), valuesList.get(i));
-          }
-
-          return keyValueHash;
-      }
-    
+            return valuesList;        
+        }   
 }
      
 
@@ -75,80 +60,94 @@ class DataNormalizer{
 
   
     
-    public double findMax(HashMap<String, List<String>> headerValueMap)
+    public double findMax(List<List<String>> valuesList)
     {
         Double maxValue = 0.0;
-        int count;
+        int valueCount;
+        int loopCount = 0; 
         
-        for(List<String> valueList : headerValueMap.values())
+        for(List<String> valueList : valuesList)
         {
-            count = 0;
+            valueCount = 0;
+            loopCount ++;
+            if(loopCount == 1){continue;}
+            
             for(String value : valueList)
             {
-                 count ++;
-                 if (count > 2)
+                 valueCount ++;
+                 if (valueCount > 2)
                  {
                      if(Double.parseDouble(value) > maxValue)
                      {
                          maxValue = Double.parseDouble(value);
                      }
                  }
-            }
-            
+            }   
         }
         return maxValue;
     }
     
-    public List<List<String>> normalizeData(File inputFile, double maxValue) throws Exception
+    public List<List<String>> normalizeData(List<List<String>> valuesList, double maxValue) throws Exception
     {
-        List<List<String>> valuesList = new ArrayList(new ArrayList<String>());
-        List<String> valueList;
-        Scanner scannerObj = new Scanner(inputFile);
-
-        //Add file headers
-        valuesList.add(Arrays.asList(scannerObj.nextLine().split(",")));
+     
+        int valueCount;
+        int loopCount = 0; 
         
-        //Add file rows
-        while(scannerObj.hasNextLine())
+        List<List<String>> normalizedValuesList = new ArrayList();
+        List<String> normalizedValueList;
+        
+        for(List<String> valueList : valuesList)
         {
-            int count = 0;
-            valueList = new ArrayList<String>();
-          
-            for(String value : scannerObj.nextLine().split(","))
+            valueCount = 0;
+            loopCount ++;
+            if(loopCount == 1)
             {
-                count ++;
-                if (count > 2)
-                {
-                    valueList.add(String.valueOf((Double.valueOf(value))/maxValue));
-                }
-                else
-                {
-                    valueList.add(value);
-                }
+                normalizedValuesList.add(valueList);
+                continue;
             }
-            valuesList.add(valueList);
+            
+            normalizedValueList = new ArrayList<String>();
+            for(String value : valueList)
+            {
+                 valueCount ++;
+                 if (valueCount > 2)
+                 {
+                     normalizedValueList.add(String.valueOf((Double.parseDouble(value)/maxValue)));            
+                    
+                 }
+                 else
+                 {
+                     normalizedValueList.add(value);
+                 }
+            }
+            normalizedValuesList.add(normalizedValueList);
         }
         
-        return valuesList;
+        return normalizedValuesList;
     }
     
     public void main(Logger logger)
     {
         
         String dirPath = "/Users/karthikchandrasekar/Downloads/sampledata_P1_F14/Epidemic Simulation Datasets";
+        //String dirPath = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
         MyUtil muObj = new MyUtil();
         Double maxValue = 0.0;
-        HashMap<String, List<String>> headerValueMap;
         List<List<String>> valuesList;
         
         try
         {       
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
-                headerValueMap = muObj.readCsv(file, logger);
-                maxValue = findMax(headerValueMap);
-                valuesList = normalizeData(file, maxValue);
+                //Task 1 - a
+                valuesList = muObj.readCsv(file, logger);
+                maxValue = findMax(valuesList);
+                logger.info(String.valueOf(maxValue));
+                valuesList = normalizeData(valuesList, maxValue);
                 dumpInFile(valuesList, file.getName());
+                
+                //Task 1 - c
+                muObj.formHeaderValueHash(valuesList);
             }
         }
         catch(Exception e)
@@ -205,11 +204,11 @@ public static void main(String args[]) throws Exception
         dn.main(logger);
         
         //Bands Generator
-        BandsGenerator bg = new BandsGenerator();
-        bg.main(logger);
+        //BandsGenerator bg = new BandsGenerator();
+        //bg.main(logger);
         
         //Epidemic word file generator
-        EpidemicFileGenerator efg = new EpidemicFileGenerator();
-        efg.main(logger);
+        //EpidemicFileGenerator efg = new EpidemicFileGenerator();
+        //efg.main(logger);
     }   
 }
