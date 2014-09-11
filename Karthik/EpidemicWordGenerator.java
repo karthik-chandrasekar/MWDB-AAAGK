@@ -33,6 +33,38 @@ class MyUtil{
             
             return valuesList;        
         }   
+     
+     public HashMap<String, List<String>> formHeaderValueHash(List<List<String>> valuesList)
+     {
+         HashMap<String, List<String>> headerValueColumnMap = new HashMap<String, List<String>>();
+         List<String> headerList = new ArrayList<String>();
+         int valueCount;
+         List<String> mapValueList;
+         String key;
+         
+         headerList = valuesList.get(0);
+         valuesList.remove(0);
+         
+         for(List<String> valueList : valuesList)
+         {
+             valueCount = 0;
+             for(String value : valueList)
+             {
+                 key = headerList.get(valueCount);
+                 mapValueList = headerValueColumnMap.get(key);
+                 if (mapValueList == null)
+                 {
+                     mapValueList = new ArrayList<String>();
+                 }
+                 mapValueList.add(value);
+
+                 headerValueColumnMap.put(key, mapValueList);
+                 valueCount++;
+             }
+             
+         }
+         return headerValueColumnMap;
+     }
 }
      
 
@@ -126,6 +158,62 @@ class DataNormalizer{
         return normalizedValuesList;
     }
     
+    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer)
+    {
+        
+        List<String> valueList = null;
+        List<String> timeList;
+        List<String> outputList;
+        int window = 3;
+        int shift = 2;
+        int valueSize ;
+        String delim = ",";
+        String outputString;
+        
+        timeList = headerValueColumnMap.get("time");
+        
+        for(String header: headerList)
+        {
+            valueList = headerValueColumnMap.get(header);       
+            valueSize = valueList.size();
+            
+            outputList = new ArrayList<String>();
+            outputList.add(fileName);
+            outputList.add(header);
+            
+            for(int startIndex=0;startIndex<valueSize;)
+            {
+                outputString = "";
+                if (startIndex+window < valueSize)
+                {
+                    outputList.add(timeList.get(startIndex));
+                    for(int j=startIndex; j<startIndex+window;j++)
+                    {
+                        outputList.add(getBandRep(valueList.get(j)));
+                    }
+                    
+                    for(String output: outputList)
+                    {
+                        outputString = outputString + output + delim;
+                    }
+                    writer.println(outputString);
+                
+                    startIndex = startIndex + shift;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }   
+    }
+    
+    String getBandRep(String value)
+    {
+        return " ";
+    }
+    
+    
     public void main(Logger logger)
     {
         
@@ -134,9 +222,15 @@ class DataNormalizer{
         MyUtil muObj = new MyUtil();
         Double maxValue = 0.0;
         List<List<String>> valuesList;
+        List<String> headerList;
+        HashMap<String, List<String>> headerValueColumnMap;
         
         try
-        {       
+        {                       
+        
+            String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
+            PrintWriter writer = new PrintWriter(outputDir+"EpidemicWordFile", "UTF-8");
+
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
                 //Task 1 - a
@@ -147,7 +241,9 @@ class DataNormalizer{
                 dumpInFile(valuesList, file.getName());
                 
                 //Task 1 - c
-                muObj.formHeaderValueHash(valuesList);
+                headerList = valuesList.get(0);
+                headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
+                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer);
             }
         }
         catch(Exception e)
