@@ -68,10 +68,12 @@ class MyUtil{
 }
      
 
-class DataNormalizer{
+class EpidemicDataHandler{
     
  
-    List<Integer> bandsList = new ArrayList<Integer>();
+    List<Integer> bandsList;
+    List<String> bandRepList;
+
     public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
     {
         String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
@@ -213,7 +215,6 @@ class DataNormalizer{
     {
         Double inputValue = Double.valueOf(value);
         String bandRep = "";
-        List<String> bandRepList = new ArrayList<String>();
         
         for(int i=0;i< bandsList.size();i++)
         {
@@ -234,9 +235,7 @@ class DataNormalizer{
         
         Scanner scannerObj = new Scanner(inputDirPath);
         
-
-        
-        
+    
         return adjacencyHashMap;
     }
     
@@ -266,12 +265,21 @@ class DataNormalizer{
                 valuesList = normalizeData(valuesList, maxValue);
                 dumpInFile(valuesList, file.getName());
                 
+                
+                //Bands Generator
+                //BandsGenerator bg = new BandsGenerator();
+                //bg.main(logger);
+                //bandsList = bg.bandsList;
+                //bandRepList = bg.bandRepList;
+               
                 //Task 1 - c
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
                 generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer);
                 
             }
+            
+            writer.close();
             
             //Task 2
             HashMap<String, List<String>> adjacencyHashMap;
@@ -287,6 +295,11 @@ class DataNormalizer{
 }
 
 class BandsGenerator{
+    
+    List<Integer> bandsList = new ArrayList<Integer>();
+    List<String> bandRepList = new ArrayList<String>();
+
+    
     public void main(Logger logger) throws MatlabConnectionException, MatlabInvocationException{
         
         //Create a proxy, which we will use to control MATLAB
@@ -303,12 +316,9 @@ class BandsGenerator{
           * 
           */
          
-         proxy.disconnect();
-        
+         proxy.disconnect();        
     }
 }
-
-
 
 
 
@@ -324,15 +334,7 @@ public static void main(String args[]) throws Exception
 
         logger.info("Logger starts");
 
-        //Data Normalizer
-        DataNormalizer dn = new DataNormalizer();
+        EpidemicDataHandler dn = new EpidemicDataHandler();
         dn.main(logger);
-        
-        //Bands Generator
-        //BandsGenerator bg = new BandsGenerator();
-        //bg.main(logger);
-   
-     
-        
     }   
 }
