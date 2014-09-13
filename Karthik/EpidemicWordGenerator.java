@@ -71,6 +71,7 @@ class MyUtil{
 class DataNormalizer{
     
  
+    List<Integer> bandsList = new ArrayList<Integer>();
     public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
     {
         String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
@@ -210,9 +211,34 @@ class DataNormalizer{
     
     String getBandRep(String value)
     {
-        return " ";
+        Double inputValue = Double.valueOf(value);
+        String bandRep = "";
+        List<String> bandRepList = new ArrayList<String>();
+        
+        for(int i=0;i< bandsList.size();i++)
+        {
+            if( inputValue >= bandsList.get(i) && inputValue <= bandsList.get(i+1))
+            {
+                bandRep = bandRepList.get(i);
+                break;
+            }
+        }
+        return bandRep;
     }
     
+    
+    public HashMap<String, List<String>> formAdjacencyHashMap()
+    {
+        HashMap<String, List<String>> adjacencyHashMap = new HashMap<String, List<String>>();
+        String inputDirPath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
+        
+        Scanner scannerObj = new Scanner(inputDirPath);
+        
+
+        
+        
+        return adjacencyHashMap;
+    }
     
     public void main(Logger logger)
     {
@@ -244,11 +270,19 @@ class DataNormalizer{
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
                 generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer);
+                
             }
+            
+            //Task 2
+            HashMap<String, List<String>> adjacencyHashMap;
+            
+            adjacencyHashMap = formAdjacencyHashMap();
         }
         catch(Exception e)
         {
         }
+        
+        
     }    
 }
 
@@ -275,12 +309,7 @@ class BandsGenerator{
 }
 
 
-class EpidemicFileGenerator{
-    
-    public void main(Logger logger){
-        
-    }
-}
+
 
 
 public class EpidemicWordGenerator {
@@ -302,9 +331,8 @@ public static void main(String args[]) throws Exception
         //Bands Generator
         //BandsGenerator bg = new BandsGenerator();
         //bg.main(logger);
+   
+     
         
-        //Epidemic word file generator
-        //EpidemicFileGenerator efg = new EpidemicFileGenerator();
-        //efg.main(logger);
     }   
 }
