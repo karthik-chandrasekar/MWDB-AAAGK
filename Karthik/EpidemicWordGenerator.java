@@ -71,9 +71,10 @@ class MyUtil{
 class EpidemicDataHandler{
     
  
-    List<Integer> bandsList;
+    List<Double> bandsList;
     List<String> bandRepList;
-
+    HashMap<String, List<String>> epidemicWordFileHash = new HashMap<String, List<String>>();
+    
     public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
     {
         String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
@@ -161,7 +162,7 @@ class EpidemicDataHandler{
         return normalizedValuesList;
     }
     
-    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer)
+    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger)
     {
         
         List<String> valueList = null;
@@ -170,37 +171,59 @@ class EpidemicDataHandler{
         int window = 3;
         int shift = 2;
         int valueSize ;
+        String temp;
         String delim = ",";
         String outputString;
+        List<String> opList;
         
         timeList = headerValueColumnMap.get("time");
         
-        for(String header: headerList)
+        System.out.println(bandsList);
+        System.out.println(bandRepList);
+        logger.info(fileName);
+        System.out.println(headerList);
+        
+        for(String header: headerList)      
         {
+            
+            if (header.equals("iteration") || header.equals("time"))
+            {
+                continue;
+            }
+            
+            logger.info("File name " + fileName + "  " + header);
             valueList = headerValueColumnMap.get(header);       
             valueSize = valueList.size();
+            opList = new ArrayList<String>();
             
-            outputList = new ArrayList<String>();
-            outputList.add(fileName);
-            outputList.add(header);
             
+            //System.out.println("Value size " + valueSize);
             for(int startIndex=0;startIndex<valueSize;)
             {
+                
+                outputList = new ArrayList<String>();
+                outputList.add(fileName);
+                outputList.add(header);
+                
+                //System.out.println("Start index " + startIndex);
                 outputString = "";
                 if (startIndex+window < valueSize)
                 {
                     outputList.add(timeList.get(startIndex));
                     for(int j=startIndex; j<startIndex+window;j++)
                     {
-                        outputList.add(getBandRep(valueList.get(j)));
+                        temp = getBandRep(valueList.get(j));
+                        outputList.add(temp);
                     }
                     
                     for(String output: outputList)
                     {
                         outputString = outputString + output + delim;
                     }
+                    outputString = outputString.substring(0, outputString.length()-1);
                     writer.println(outputString);
-                
+                                      
+                    opList.add(outputString);                    
                     startIndex = startIndex + shift;
                 }
                 else
@@ -208,7 +231,8 @@ class EpidemicDataHandler{
                     break;
                 }
             }
-        }   
+            epidemicWordFileHash.put(fileName+"-"+header, opList);
+        }  
     }
     
     String getBandRep(String value)
@@ -230,14 +254,49 @@ class EpidemicDataHandler{
     
     public HashMap<String, List<String>> formAdjacencyHashMap()
     {
+        
+        //Parse adjacency matrix and form a state, adjacent states hash map
+        
         HashMap<String, List<String>> adjacencyHashMap = new HashMap<String, List<String>>();
-        String inputDirPath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
+        List<String> headerList;
+        List<String> valueList;
+        int count;
+        String header="";
         
-        Scanner scannerObj = new Scanner(inputDirPath);
+        String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
         
-    
+        Scanner scannerObj = new Scanner(inputFilePath);
+        
+        headerList = Arrays.asList(scannerObj.nextLine().split(","));
+        
+        while(scannerObj.hasNextLine())
+        {
+            count = 0; 
+            valueList = new ArrayList<String>();
+            for(String value : scannerObj.nextLine().split(","))
+            {
+                if(count == 0)
+                {
+                    header = value;
+                    continue;
+                }
+                else if (Integer.parseInt(value)==1)
+                {
+                    valueList.add(headerList.get(count));
+                }
+                count ++;
+            }
+            adjacencyHashMap.put(header, valueList);
+        }     
         return adjacencyHashMap;
     }
+    
+    
+    public void generateEpidemicFile()
+    {
+        
+    }
+    
     
     public void main(Logger logger)
     {
@@ -249,6 +308,7 @@ class EpidemicDataHandler{
         List<List<String>> valuesList;
         List<String> headerList;
         HashMap<String, List<String>> headerValueColumnMap;
+
         
         try
         {                       
@@ -258,65 +318,94 @@ class EpidemicDataHandler{
 
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
+                System.out.println("File " + file.getName());
                 //Task 1 - a
+                logger.info("Task 1 -a");
                 valuesList = muObj.readCsv(file, logger);
                 maxValue = findMax(valuesList);
                 logger.info(String.valueOf(maxValue));
                 valuesList = normalizeData(valuesList, maxValue);
                 dumpInFile(valuesList, file.getName());
                 
-                
                 //Bands Generator
-                //BandsGenerator bg = new BandsGenerator();
-                //bg.main(logger);
-                //bandsList = bg.bandsList;
-                //bandRepList = bg.bandRepList;
+                logger.info("Bands generator");
+                BandsGenerator bg = new BandsGenerator();
+                bg.main(logger);
+                bandsList = bg.bandsList;
+                bandRepList = bg.bandRepList;
                
                 //Task 1 - c
+                logger.info("Task 1-c");
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
-                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer);
-                
+                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger);
+               
+
+                logger.info("End of all tasks"); 
             }
             
             writer.close();
             
             //Task 2
-            HashMap<String, List<String>> adjacencyHashMap;
             
+            
+            HashMap<String, List<String>> adjacencyHashMap;        
             adjacencyHashMap = formAdjacencyHashMap();
+            //generateEpidemicAvgFile()
+       
+            
+            
+            
         }
         catch(Exception e)
         {
-        }
-        
-        
+        }   
     }    
 }
 
 class BandsGenerator{
     
-    List<Integer> bandsList = new ArrayList<Integer>();
-    List<String> bandRepList = new ArrayList<String>();
+    List<Double> bandsList = new ArrayList<Double>();
+    List<String> bandRepList; 
 
     
     public void main(Logger logger) throws MatlabConnectionException, MatlabInvocationException{
         
-        //Create a proxy, which we will use to control MATLAB
+        /***
+         //Create a proxy, which we will use to control MATLAB
          MatlabProxyFactory factory = new MatlabProxyFactory();
          MatlabProxy proxy = factory.getProxy();
          
-        //set matlab path
+         //set matlab path
          String path = "cd('/Users/karthikchandrasekar/Documents/MATLAB')";
          proxy.eval(path);
          proxy.eval("JavaMatConn");
          
-         /***
           * Call matlab function to get back band values
           * 
+          *          proxy.disconnect();        
           */
-         
-         proxy.disconnect();        
+        
+        logger.info("Inside band generator");
+ 
+        bandsList.add(0.0);
+        bandsList.add(0.25);
+        bandsList.add(0.5);
+        bandsList.add(1.0);
+        
+        getBandRepList();
+    }
+    
+    void getBandRepList()
+    {
+        bandRepList = new ArrayList<String>();
+        String output;
+        
+        for(int i=0;i+1<bandsList.size();i++)
+        {
+            output = String.valueOf((bandsList.get(i) + bandsList.get(i+1))/2.0);
+            bandRepList.add(output);
+        }
     }
 }
 
@@ -338,3 +427,4 @@ public static void main(String args[]) throws Exception
         dn.main(logger);
     }   
 }
+
