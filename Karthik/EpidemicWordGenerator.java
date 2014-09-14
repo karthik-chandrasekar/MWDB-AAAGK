@@ -73,7 +73,6 @@ class EpidemicDataHandler{
  
     List<Double> bandsList;
     List<String> bandRepList;
-    HashMap<String, List<String>> epidemicWordFileHash = new HashMap<String, List<String>>();
     Double Alpha = 0.3;
     
     public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
@@ -163,7 +162,7 @@ class EpidemicDataHandler{
         return normalizedValuesList;
     }
     
-    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger)
+    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger, HashMap<String, List<String>> epidemicWordFileHash)
     {
         
         List<String> valueList = null;
@@ -294,11 +293,9 @@ class EpidemicDataHandler{
     }
       
     
-    void generateEpidemicAvgDiffFile() throws Exception
+    void generateEpidemicAvgDiffFile(HashMap<String, List<String>> epidemicWordFileHash) throws Exception
     {
-        System.out.println(epidemicWordFileHash.values());
         
-        List<List<String>> epidemicWordFileList =  (List<List<String>>) epidemicWordFileHash.values();
         List<String> tempList;
         List<String> hashOutputList;
         String key;
@@ -312,17 +309,15 @@ class EpidemicDataHandler{
         String avgString;
         
         String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
-        PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"EpidemicWordFileAvg", "UTF_8");
+        PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"EpidemicWordFileAvg", "UTF-8");
         
-        PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF_8");
+        PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF-8");
         
-        System.out.println(epidemicWordFileList);
         for(List<String> valueList : epidemicWordFileHash.values())
-        {
-            System.out.println(valueList);
-            
+        {           
             for(String entry: valueList)
             {
+                    System.out.println(entry);
                     tempList = Arrays.asList(entry.split(",")); 
                     resultantList = new ArrayList<Double>();
                     for(int i=0;i<tempList.size()-3;i++)
@@ -352,6 +347,8 @@ class EpidemicDataHandler{
                         }
                     }
                     
+                    System.out.println("Hashoutput size " + hashOutputList.size() );
+                    System.out.println(hashOutputList);
                     hashOutputListSize = hashOutputList.size();
                     for(int i=0;i<resultantList.size();i++)
                     {
@@ -359,6 +356,7 @@ class EpidemicDataHandler{
                     }
                     
                     //EpidemicWordFileAvg 
+                    System.out.println("EpidemicWordFileAvg");
                     newEpidemicWordFileAvgList = getEpidemicWordFileAvg(tempList, resultantList);
                     for(int i =3;i<tempList.size();i++)
                     {
@@ -375,6 +373,7 @@ class EpidemicDataHandler{
                                     
                     
                     //EpidemicWordFileDiff
+                    System.out.println("EpidemicWordFileDiff");
                     newEpidemicWordFileDiffList = getEpidemicWordFileDiff(tempList, resultantList);
                     
                     for(int i =3;i<tempList.size();i++)
@@ -388,11 +387,11 @@ class EpidemicDataHandler{
                     }
                     avgString = avgString.substring(0, avgString.length()-1);
                     epidemicDiffWriter.println(avgString);
-                    
-                    epidemicAvgWriter.close();
-                    epidemicDiffWriter.close();                 
+                    System.out.println(avgString);                                  
             }
-        }       
+        } 
+        epidemicAvgWriter.close();
+        epidemicDiffWriter.close(); 
     }
     
     List<Double> getEpidemicWordFileAvg(List<String> origVecList, List<Double> resultantList)
@@ -410,9 +409,7 @@ class EpidemicDataHandler{
             temp = finalList.get(i);
             temp += (1-Alpha) * resultantList.get(i);
             finalList.add(i, temp);
-        }
-        
-        
+        }   
         return finalList;
     }
     
@@ -441,6 +438,8 @@ class EpidemicDataHandler{
         List<List<String>> valuesList;
         List<String> headerList;
         HashMap<String, List<String>> headerValueColumnMap;
+        HashMap<String, List<String>> epidemicWordFileHash = new HashMap<String, List<String>>();
+
 
         
         try
@@ -471,7 +470,7 @@ class EpidemicDataHandler{
                 logger.info("Task 1-c");
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
-                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger);
+                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger, epidemicWordFileHash);
                
 
                 logger.info("End of task 1"); 
@@ -484,7 +483,7 @@ class EpidemicDataHandler{
             HashMap<String, List<String>> adjacencyHashMap;        
             adjacencyHashMap = formAdjacencyHashMap();
             System.out.println(adjacencyHashMap);
-            generateEpidemicAvgDiffFile();
+            generateEpidemicAvgDiffFile(epidemicWordFileHash);
             logger.info("End of task 2");        
             
         }
