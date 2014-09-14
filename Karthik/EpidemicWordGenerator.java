@@ -248,12 +248,40 @@ class EpidemicDataHandler{
     
     public HashMap<String, List<String>> formAdjacencyHashMap()
     {
+        
+        //Parse adjacency matrix and form a state, adjacent states hash map
+        
         HashMap<String, List<String>> adjacencyHashMap = new HashMap<String, List<String>>();
-        String inputDirPath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
+        List<String> headerList;
+        List<String> valueList;
+        int count;
+        String header="";
         
-        Scanner scannerObj = new Scanner(inputDirPath);
+        String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
         
-    
+        Scanner scannerObj = new Scanner(inputFilePath);
+        
+        headerList = Arrays.asList(scannerObj.nextLine().split(","));
+        
+        while(scannerObj.hasNextLine())
+        {
+            count = 0; 
+            valueList = new ArrayList<String>();
+            for(String value : scannerObj.nextLine().split(","))
+            {
+                if(count == 0)
+                {
+                    header = value;
+                    continue;
+                }
+                else if (Integer.parseInt(value)==1)
+                {
+                    valueList.add(headerList.get(count));
+                }
+                count ++;
+            }
+            adjacencyHashMap.put(header, valueList);
+        }     
         return adjacencyHashMap;
     }
     
@@ -305,9 +333,11 @@ class EpidemicDataHandler{
             writer.close();
             
             //Task 2
-            HashMap<String, List<String>> adjacencyHashMap;
-            
+            HashMap<String, List<String>> adjacencyHashMap;        
             adjacencyHashMap = formAdjacencyHashMap();
+            
+            
+            
         }
         catch(Exception e)
         {
