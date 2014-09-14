@@ -73,7 +73,8 @@ class EpidemicDataHandler{
  
     List<Double> bandsList;
     List<String> bandRepList;
-
+    HashMap<String, List<String>> epidemicWordFileHash = new HashMap<String, List<String>>();
+    
     public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
     {
         String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
@@ -170,8 +171,10 @@ class EpidemicDataHandler{
         int window = 3;
         int shift = 2;
         int valueSize ;
+        String temp;
         String delim = ",";
         String outputString;
+        List<String> opList;
         
         timeList = headerValueColumnMap.get("time");
         
@@ -179,8 +182,8 @@ class EpidemicDataHandler{
         System.out.println(bandRepList);
         logger.info(fileName);
         System.out.println(headerList);
-        for(String header: headerList)
-            
+        
+        for(String header: headerList)      
         {
             
             if (header.equals("iteration") || header.equals("time"))
@@ -191,7 +194,7 @@ class EpidemicDataHandler{
             logger.info("File name " + fileName + "  " + header);
             valueList = headerValueColumnMap.get(header);       
             valueSize = valueList.size();
-            
+            opList = new ArrayList<String>();
             
             
             //System.out.println("Value size " + valueSize);
@@ -209,7 +212,8 @@ class EpidemicDataHandler{
                     outputList.add(timeList.get(startIndex));
                     for(int j=startIndex; j<startIndex+window;j++)
                     {
-                        outputList.add(getBandRep(valueList.get(j)));
+                        temp = getBandRep(valueList.get(j));
+                        outputList.add(temp);
                     }
                     
                     for(String output: outputList)
@@ -218,7 +222,8 @@ class EpidemicDataHandler{
                     }
                     outputString = outputString.substring(0, outputString.length()-1);
                     writer.println(outputString);
-                
+                                      
+                    opList.add(outputString);                    
                     startIndex = startIndex + shift;
                 }
                 else
@@ -226,7 +231,8 @@ class EpidemicDataHandler{
                     break;
                 }
             }
-        }   
+            epidemicWordFileHash.put(fileName+"-"+header, opList);
+        }  
     }
     
     String getBandRep(String value)
@@ -285,6 +291,13 @@ class EpidemicDataHandler{
         return adjacencyHashMap;
     }
     
+    
+    public void generateEpidemicFile()
+    {
+        
+    }
+    
+    
     public void main(Logger logger)
     {
         
@@ -295,6 +308,7 @@ class EpidemicDataHandler{
         List<List<String>> valuesList;
         List<String> headerList;
         HashMap<String, List<String>> headerValueColumnMap;
+
         
         try
         {                       
@@ -333,8 +347,12 @@ class EpidemicDataHandler{
             writer.close();
             
             //Task 2
+            
+            
             HashMap<String, List<String>> adjacencyHashMap;        
             adjacencyHashMap = formAdjacencyHashMap();
+            //generateEpidemicAvgFile()
+       
             
             
             
