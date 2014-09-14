@@ -74,6 +74,7 @@ class EpidemicDataHandler{
     List<Double> bandsList;
     List<String> bandRepList;
     HashMap<String, List<String>> epidemicWordFileHash = new HashMap<String, List<String>>();
+    Double Alpha = 0.3;
     
     public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
     {
@@ -290,12 +291,136 @@ class EpidemicDataHandler{
         }     
         return adjacencyHashMap;
     }
+      
     
-    
-    public void generateEpidemicFile()
+    void generateEpdemicAvgFile() throws Exception
     {
+        List<List<String>> epidemicWordFileList =  new ArrayList(epidemicWordFileHash.values());
+        List<String> tempList;
+        List<String> hashOutputList;
+        String key;
+        Double tempDouble;
+        int count;
+        List<Double> resultantList;
+        List<Double> newEpidemicWordFileAvgList;
+        List<Double> newEpidemicWordFileDiffList;
+        int hashOutputListSize;
+        String diffString;
+        String avgString;
         
+        String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
+        PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"EpidemicWordFileAvg", "UTF_8");
+        
+        PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF_8");
+        
+        for(List<String> valueList : epidemicWordFileList)
+        {
+            resultantList = new ArrayList<Double>();
+            for(int i=0;i<Arrays.asList(valueList.get(0).split(",")).size()-3;i++)
+            {
+                resultantList.add(0.0);
+            }
+            for(String entry: valueList)
+            {
+                    tempList = Arrays.asList(entry.split(","));             
+                    key = tempList.get(0)+"-"+tempList.get(1);
+                    hashOutputList = epidemicWordFileHash.get(key);
+                    if (hashOutputList == null)
+                    {
+                        System.out.println("Value not present for key  " + key);
+                    }
+                    
+                    List<String> tempValList;
+                    for(String temp: hashOutputList)
+                    {
+                        tempValList = Arrays.asList(temp.split(","));
+                        count = 0;
+                        for(String tempValue : tempValList)
+                        {
+                            if(count < 3){count++;continue;}
+                            tempDouble = resultantList.get(count-3);
+                            tempDouble += Double.parseDouble(tempValList.get(count));
+                            resultantList.add(count-3, tempDouble);
+                            count++;
+                        }
+                    }
+                    
+                    hashOutputListSize = hashOutputList.size();
+                    for(int i=0;i<resultantList.size();i++)
+                    {
+                        resultantList.add(i,resultantList.get(i)/hashOutputListSize);
+                    }
+                    
+                    //EpidemicWordFileAvg 
+                    newEpidemicWordFileAvgList = getEpidemicWordFileAvg(tempList, resultantList);
+                    for(int i =3;i<tempList.size();i++)
+                    {
+                        tempList.add(i, String.valueOf(newEpidemicWordFileAvgList.get(i-3)));
+                    }
+                    avgString = "";
+                    for(String temp: tempList)
+                    {
+                        avgString = avgString + temp + ",";
+                    
+                    }
+                    avgString = avgString.substring(0, avgString.length()-1);
+                    epidemicAvgWriter.println(avgString);
+                                    
+                    
+                    //EpidemicWordFileDiff
+                    newEpidemicWordFileDiffList = getEpidemicWordFileDiff(tempList, resultantList);
+                    
+                    for(int i =3;i<tempList.size();i++)
+                    {
+                        tempList.add(i, String.valueOf(newEpidemicWordFileDiffList.get(i-3)));
+                    }
+                    avgString = "";
+                    for(String temp: tempList)
+                    {
+                        avgString = avgString + temp + ",";
+                    }
+                    avgString = avgString.substring(0, avgString.length()-1);
+                    epidemicDiffWriter.println(avgString);
+                
+                    
+            }
+        }       
     }
+    
+    List<Double> getEpidemicWordFileAvg(List<String> origVecList, List<Double> resultantList)
+    {
+        List<Double> finalList = new ArrayList<Double>();
+        Double temp;
+        
+        for(int i=0;i<origVecList.size(); i++)
+        {
+            finalList.add(i, Alpha*(Double.parseDouble(origVecList.get(i))));
+        }
+        
+        for(int i=0;i<resultantList.size();i++)
+        {
+            temp = finalList.get(i);
+            temp += (1-Alpha) * resultantList.get(i);
+            finalList.add(i, temp);
+        }
+        
+        
+        return finalList;
+    }
+    
+    List<Double>  getEpidemicWordFileDiff(List<String> origVecList, List<Double> resultantList)
+    {
+        List<Double> finalList = new ArrayList<Double>();
+        Double temp;
+        
+        for(int i=0;i<origVecList.size();i++)
+        {
+            temp = (Double.parseDouble(origVecList.get(i)) - resultantList.get(i))/Double.parseDouble(origVecList.get(i)); 
+            finalList.add(i, temp);
+        }
+        return finalList;
+    }
+    
     
     
     public void main(Logger logger)
