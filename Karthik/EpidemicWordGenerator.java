@@ -71,7 +71,7 @@ class MyUtil{
 class EpidemicDataHandler{
     
  
-    List<Integer> bandsList;
+    List<Double> bandsList;
     List<String> bandRepList;
 
     public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
@@ -178,20 +178,31 @@ class EpidemicDataHandler{
         System.out.println(bandsList);
         System.out.println(bandRepList);
         logger.info(fileName);
-        
+        System.out.println(headerList);
         for(String header: headerList)
             
         {
+            
+            if (header.equals("iteration") || header.equals("time"))
+            {
+                continue;
+            }
+            
             logger.info("File name " + fileName + "  " + header);
             valueList = headerValueColumnMap.get(header);       
             valueSize = valueList.size();
             
-            outputList = new ArrayList<String>();
-            outputList.add(fileName);
-            outputList.add(header);
             
+            
+            //System.out.println("Value size " + valueSize);
             for(int startIndex=0;startIndex<valueSize;)
             {
+                
+                outputList = new ArrayList<String>();
+                outputList.add(fileName);
+                outputList.add(header);
+                
+                //System.out.println("Start index " + startIndex);
                 outputString = "";
                 if (startIndex+window < valueSize)
                 {
@@ -205,6 +216,7 @@ class EpidemicDataHandler{
                     {
                         outputString = outputString + output + delim;
                     }
+                    outputString = outputString.substring(0, outputString.length()-1);
                     writer.println(outputString);
                 
                     startIndex = startIndex + shift;
@@ -264,6 +276,7 @@ class EpidemicDataHandler{
 
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
+                System.out.println("File " + file.getName());
                 //Task 1 - a
                 logger.info("Task 1 -a");
                 valuesList = muObj.readCsv(file, logger);
@@ -298,15 +311,13 @@ class EpidemicDataHandler{
         }
         catch(Exception e)
         {
-        }
-        
-        
+        }   
     }    
 }
 
 class BandsGenerator{
     
-    List<Integer> bandsList = new ArrayList<Integer>();
+    List<Double> bandsList = new ArrayList<Double>();
     List<String> bandRepList; 
 
     
@@ -329,10 +340,10 @@ class BandsGenerator{
         
         logger.info("Inside band generator");
  
-        bandsList.add(0);
-        bandsList.add(10);
-        bandsList.add(15);
-        bandsList.add(22);
+        bandsList.add(0.0);
+        bandsList.add(0.25);
+        bandsList.add(0.5);
+        bandsList.add(1.0);
         
         getBandRepList();
     }
@@ -344,7 +355,7 @@ class BandsGenerator{
         
         for(int i=0;i+1<bandsList.size();i++)
         {
-            output = String.valueOf((bandsList.get(i) + bandsList.get(i+1))/2);
+            output = String.valueOf((bandsList.get(i) + bandsList.get(i+1))/2.0);
             bandRepList.add(output);
         }
     }
