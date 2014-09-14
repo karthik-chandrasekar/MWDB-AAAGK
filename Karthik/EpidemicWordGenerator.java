@@ -161,7 +161,7 @@ class EpidemicDataHandler{
         return normalizedValuesList;
     }
     
-    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer)
+    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger)
     {
         
         List<String> valueList = null;
@@ -175,8 +175,14 @@ class EpidemicDataHandler{
         
         timeList = headerValueColumnMap.get("time");
         
+        System.out.println(bandsList);
+        System.out.println(bandRepList);
+        logger.info(fileName);
+        
         for(String header: headerList)
+            
         {
+            logger.info("File name " + fileName + "  " + header);
             valueList = headerValueColumnMap.get(header);       
             valueSize = valueList.size();
             
@@ -259,24 +265,28 @@ class EpidemicDataHandler{
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
                 //Task 1 - a
+                logger.info("Task 1 -a");
                 valuesList = muObj.readCsv(file, logger);
                 maxValue = findMax(valuesList);
                 logger.info(String.valueOf(maxValue));
                 valuesList = normalizeData(valuesList, maxValue);
                 dumpInFile(valuesList, file.getName());
                 
-                
                 //Bands Generator
-                //BandsGenerator bg = new BandsGenerator();
-                //bg.main(logger);
-                //bandsList = bg.bandsList;
-                //bandRepList = bg.bandRepList;
+                logger.info("Bands generator");
+                BandsGenerator bg = new BandsGenerator();
+                bg.main(logger);
+                bandsList = bg.bandsList;
+                bandRepList = bg.bandRepList;
                
                 //Task 1 - c
+                logger.info("Task 1-c");
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
-                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer);
-                
+                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger);
+               
+
+                logger.info("End of all tasks"); 
             }
             
             writer.close();
@@ -297,26 +307,46 @@ class EpidemicDataHandler{
 class BandsGenerator{
     
     List<Integer> bandsList = new ArrayList<Integer>();
-    List<String> bandRepList = new ArrayList<String>();
+    List<String> bandRepList; 
 
     
     public void main(Logger logger) throws MatlabConnectionException, MatlabInvocationException{
         
-        //Create a proxy, which we will use to control MATLAB
+        /***
+         //Create a proxy, which we will use to control MATLAB
          MatlabProxyFactory factory = new MatlabProxyFactory();
          MatlabProxy proxy = factory.getProxy();
          
-        //set matlab path
+         //set matlab path
          String path = "cd('/Users/karthikchandrasekar/Documents/MATLAB')";
          proxy.eval(path);
          proxy.eval("JavaMatConn");
          
-         /***
           * Call matlab function to get back band values
           * 
+          *          proxy.disconnect();        
           */
-         
-         proxy.disconnect();        
+        
+        logger.info("Inside band generator");
+ 
+        bandsList.add(0);
+        bandsList.add(10);
+        bandsList.add(15);
+        bandsList.add(22);
+        
+        getBandRepList();
+    }
+    
+    void getBandRepList()
+    {
+        bandRepList = new ArrayList<String>();
+        String output;
+        
+        for(int i=0;i+1<bandsList.size();i++)
+        {
+            output = String.valueOf((bandsList.get(i) + bandsList.get(i+1))/2);
+            bandRepList.add(output);
+        }
     }
 }
 
@@ -338,3 +368,4 @@ public static void main(String args[]) throws Exception
         dn.main(logger);
     }   
 }
+
