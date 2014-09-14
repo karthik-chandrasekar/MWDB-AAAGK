@@ -293,7 +293,7 @@ class EpidemicDataHandler{
     }
       
     
-    void generateEpdemicAvgFile() throws Exception
+    void generateEpidemicAvgDiffFile() throws Exception
     {
         List<List<String>> epidemicWordFileList =  new ArrayList(epidemicWordFileHash.values());
         List<String> tempList;
@@ -315,19 +315,21 @@ class EpidemicDataHandler{
         
         for(List<String> valueList : epidemicWordFileList)
         {
-            resultantList = new ArrayList<Double>();
-            for(int i=0;i<Arrays.asList(valueList.get(0).split(",")).size()-3;i++)
-            {
-                resultantList.add(0.0);
-            }
+            
             for(String entry: valueList)
             {
-                    tempList = Arrays.asList(entry.split(","));             
+                    tempList = Arrays.asList(entry.split(",")); 
+                    resultantList = new ArrayList<Double>();
+                    for(int i=0;i<tempList.size()-3;i++)
+                    {
+                        resultantList.add(0.0);
+                    }
                     key = tempList.get(0)+"-"+tempList.get(1);
                     hashOutputList = epidemicWordFileHash.get(key);
                     if (hashOutputList == null)
                     {
                         System.out.println("Value not present for key  " + key);
+                        continue;
                     }
                     
                     List<String> tempValList;
@@ -381,8 +383,9 @@ class EpidemicDataHandler{
                     }
                     avgString = avgString.substring(0, avgString.length()-1);
                     epidemicDiffWriter.println(avgString);
-                
                     
+                    epidemicAvgWriter.close();
+                    epidemicDiffWriter.close();                 
             }
         }       
     }
@@ -472,11 +475,11 @@ class EpidemicDataHandler{
             writer.close();
             
             //Task 2
-            
-            
+                     
             HashMap<String, List<String>> adjacencyHashMap;        
             adjacencyHashMap = formAdjacencyHashMap();
-            //generateEpidemicAvgFile()
+            System.out.println(adjacencyHashMap);
+            generateEpidemicAvgDiffFile();
        
             
             
