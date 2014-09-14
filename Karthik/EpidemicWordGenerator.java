@@ -253,7 +253,7 @@ class EpidemicDataHandler{
     }
     
     
-    public HashMap<String, List<String>> formAdjacencyHashMap()
+    public HashMap<String, List<String>> formAdjacencyHashMap() throws Exception
     {
         
         //Parse adjacency matrix and form a state, adjacent states hash map
@@ -266,10 +266,10 @@ class EpidemicDataHandler{
         
         String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
         
-        Scanner scannerObj = new Scanner(inputFilePath);
+        Scanner scannerObj = new Scanner(new File(inputFilePath));
         
         headerList = Arrays.asList(scannerObj.nextLine().split(","));
-        
+        System.out.println(headerList);
         while(scannerObj.hasNextLine())
         {
             count = 0; 
@@ -279,6 +279,7 @@ class EpidemicDataHandler{
                 if(count == 0)
                 {
                     header = value;
+                    count++;
                     continue;
                 }
                 else if (Integer.parseInt(value)==1)
@@ -295,7 +296,9 @@ class EpidemicDataHandler{
     
     void generateEpidemicAvgDiffFile() throws Exception
     {
-        List<List<String>> epidemicWordFileList =  new ArrayList(epidemicWordFileHash.values());
+        System.out.println(epidemicWordFileHash.values());
+        
+        List<List<String>> epidemicWordFileList =  (List<List<String>>) epidemicWordFileHash.values();
         List<String> tempList;
         List<String> hashOutputList;
         String key;
@@ -313,8 +316,10 @@ class EpidemicDataHandler{
         
         PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF_8");
         
-        for(List<String> valueList : epidemicWordFileList)
+        System.out.println(epidemicWordFileList);
+        for(List<String> valueList : epidemicWordFileHash.values())
         {
+            System.out.println(valueList);
             
             for(String entry: valueList)
             {
@@ -469,7 +474,7 @@ class EpidemicDataHandler{
                 generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger);
                
 
-                logger.info("End of all tasks"); 
+                logger.info("End of task 1"); 
             }
             
             writer.close();
@@ -480,13 +485,13 @@ class EpidemicDataHandler{
             adjacencyHashMap = formAdjacencyHashMap();
             System.out.println(adjacencyHashMap);
             generateEpidemicAvgDiffFile();
-       
-            
-            
+            logger.info("End of task 2");        
             
         }
         catch(Exception e)
         {
+            System.out.println("Inside exception");
+            
         }   
     }    
 }
