@@ -27,8 +27,7 @@ class MyUtil{
             //Collect values list
             while(scannerObj.hasNextLine())
             {
-                valuesList.add(Arrays.asList(scannerObj.nextLine().split(",")));
-                
+                valuesList.add(Arrays.asList(scannerObj.nextLine().split(",")));               
             }
             
             return valuesList;        
@@ -174,7 +173,7 @@ class EpidemicDataHandler{
         String temp;
         String delim = ",";
         String outputString;
-        String opListString="";
+        String opListString;
         String opListStringDelim="#";
         timeList = headerValueColumnMap.get("time");
         
@@ -191,11 +190,10 @@ class EpidemicDataHandler{
                 continue;
             }
             
-            logger.info("File name " + fileName + "  " + header);
             valueList = headerValueColumnMap.get(header);       
             valueSize = valueList.size();
             
-            
+            opListString = "";
             //System.out.println("Value size " + valueSize);
             for(int startIndex=0;startIndex<valueSize;)
             {
@@ -223,7 +221,7 @@ class EpidemicDataHandler{
                     writer.println(outputString);
                     epidemicWordFileValuesList.add(outputString);
                                       
-                    opListString += (outputString)+ opListStringDelim;                    
+                    opListString += outputString + opListStringDelim;                    
                     startIndex = startIndex + shift;
                 }
                 else
@@ -231,6 +229,7 @@ class EpidemicDataHandler{
                     break;
                 }
             }
+            opListString = opListString.substring(0, opListString.length()-1);
             epidemicWordFileHash.put(fileName+"-"+header, opListString);
         }  
     }
@@ -282,7 +281,7 @@ class EpidemicDataHandler{
                 }
                 else if (Integer.parseInt(value)==1)
                 {
-                    valueList.add(headerList.get(count));
+                    valueList.add("US-"+headerList.get(count));
                 }
                 count ++;
             }
@@ -334,7 +333,7 @@ class EpidemicDataHandler{
                     hashOutputListString = "";
                     for(String neighbor: neighborList)
                     {
-                        hashOutputListString += epidemicWordFileHash.get(key) + "#";
+                        hashOutputListString += epidemicWordFileHash.get(tempList.get(0)+"-"+neighbor) + "#";
                     }
                     hashOutputListString = hashOutputListString.substring(0, hashOutputListString.length()-1);
                     
@@ -343,7 +342,6 @@ class EpidemicDataHandler{
                         System.out.println("Value not present for key  " + key);
                         continue;
                     }
-                    
                     List<String> tempValList;
                     hashOutputListSize = 0;
                     for(String temp: hashOutputListString.split("#"))
@@ -351,7 +349,7 @@ class EpidemicDataHandler{
                         if (temp.isEmpty()){continue;}
                         tempValList = Arrays.asList(temp.split(","));
                         if (tempValList.isEmpty() || tempList.isEmpty()){continue;}
-                        if(!(tempValList.get(3).equals(tempList.get(3))))
+                        if(!(tempValList.get(2).equals(tempList.get(2))))
                         {
                             continue;
                         }
@@ -395,13 +393,13 @@ class EpidemicDataHandler{
                     {
                         tempList.set(i, String.valueOf(newEpidemicWordFileDiffList.get(i-3)));
                     }
-                    avgString = "";
+                    diffString = "";
                     for(String temp: tempList)
                     {
-                        avgString = avgString + temp + ",";
+                        diffString = diffString + temp + ",";
                     }
-                    avgString = avgString.substring(0, avgString.length()-1);
-                    epidemicDiffWriter.println(avgString);
+                    diffString = diffString.substring(0, diffString.length()-1);
+                    epidemicDiffWriter.println(diffString);
             
         } 
         epidemicAvgWriter.close();
@@ -465,10 +463,8 @@ class EpidemicDataHandler{
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
                 //Task 1 - a
-                logger.info("Task 1 -a");
                 valuesList = muObj.readCsv(file, logger);
                 maxValue = findMax(valuesList);
-                logger.info(String.valueOf(maxValue));
                 valuesList = normalizeData(valuesList, maxValue);
                 dumpInFile(valuesList, file.getName());
                 
@@ -480,7 +476,6 @@ class EpidemicDataHandler{
                 bandRepList = bg.bandRepList;
                
                 //Task 1 - c
-                logger.info("Task 1-c");
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
                 generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger, epidemicWordFileHash, epidemicFileValuesList);
