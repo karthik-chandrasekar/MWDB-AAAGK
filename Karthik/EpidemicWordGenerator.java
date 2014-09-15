@@ -287,13 +287,13 @@ class EpidemicDataHandler{
                 }
                 count ++;
             }
-            adjacencyHashMap.put(header, valueList);
+            adjacencyHashMap.put("US-"+header, valueList);
         }     
         return adjacencyHashMap;
     }
       
     
-    void generateEpidemicAvgDiffFile(HashMap<String, String> epidemicWordFileHash, List<String> epidemicFileValuesList) throws Exception
+    void generateEpidemicAvgDiffFile(HashMap<String, String> epidemicWordFileHash, List<String> epidemicFileValuesList, HashMap<String, List<String>> adjacencyHashMap) throws Exception
     {
         
         List<String> tempList;
@@ -307,6 +307,7 @@ class EpidemicDataHandler{
         int hashOutputListSize;
         String diffString;
         String avgString;
+        List<String> neighborList;
         
         String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
         PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"EpidemicWordFileAvg", "UTF-8");
@@ -314,19 +315,31 @@ class EpidemicDataHandler{
         PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF-8");
         
         for(String entry : epidemicFileValuesList)
-        {           
-            
+        {                       
                     System.out.println(entry);
                     tempList = Arrays.asList(entry.split(",")); 
+                    if (tempList.isEmpty()){continue;}
                     resultantList = new ArrayList<Double>();
-                    System.out.println("Temp List" +  tempList);
                     for(int i=0;i<tempList.size()-3;i++)
                     {
                         resultantList.add(0.0);
                     }
                     key = tempList.get(0)+"-"+tempList.get(1);
                     
-                    hashOutputListString = epidemicWordFileHash.get(key);
+                    neighborList = adjacencyHashMap.get(tempList.get(1));
+                    
+                    if(neighborList.isEmpty())
+                    {
+                        continue;
+                    }
+                    
+                    hashOutputListString = "";
+                    for(String neighbor: neighborList)
+                    {
+                        hashOutputListString += epidemicWordFileHash.get(key) + "#";
+                    }
+                    hashOutputListString = hashOutputListString.substring(0, hashOutputListString.length()-1);
+                    
                     if (hashOutputListString == null)
                     {
                         System.out.println("Value not present for key  " + key);
@@ -336,7 +349,15 @@ class EpidemicDataHandler{
                     List<String> tempValList;
                     for(String temp: hashOutputListString.split("#"))
                     {
+                        if (temp.isEmpty()){continue;}
                         tempValList = Arrays.asList(temp.split(","));
+                        System.out.println(tempValList);
+                        if (tempValList.isEmpty() || tempList.isEmpty()){continue;}
+                        if(!(tempValList.get(3).equals(tempList.get(3))))
+                        {
+                            continue;
+                        }
+                        
                         count = 0;
                         for(String tempValue : tempValList)
                         {
@@ -491,8 +512,7 @@ class EpidemicDataHandler{
                      
             HashMap<String, List<String>> adjacencyHashMap;        
             adjacencyHashMap = formAdjacencyHashMap();
-            System.out.println(adjacencyHashMap);
-            generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList);
+            generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap);
             logger.info("End of task 2");        
             
         }
