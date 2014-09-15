@@ -268,7 +268,6 @@ class EpidemicDataHandler{
         Scanner scannerObj = new Scanner(new File(inputFilePath));
         
         headerList = Arrays.asList(scannerObj.nextLine().split(","));
-        System.out.println(headerList);
         while(scannerObj.hasNextLine())
         {
             count = 0; 
@@ -316,7 +315,6 @@ class EpidemicDataHandler{
         
         for(String entry : epidemicFileValuesList)
         {                       
-                    System.out.println(entry);
                     tempList = Arrays.asList(entry.split(",")); 
                     if (tempList.isEmpty()){continue;}
                     resultantList = new ArrayList<Double>();
@@ -347,17 +345,17 @@ class EpidemicDataHandler{
                     }
                     
                     List<String> tempValList;
+                    hashOutputListSize = 0;
                     for(String temp: hashOutputListString.split("#"))
                     {
                         if (temp.isEmpty()){continue;}
                         tempValList = Arrays.asList(temp.split(","));
-                        System.out.println(tempValList);
                         if (tempValList.isEmpty() || tempList.isEmpty()){continue;}
                         if(!(tempValList.get(3).equals(tempList.get(3))))
                         {
                             continue;
                         }
-                        
+                        hashOutputListSize++;
                         count = 0;
                         for(String tempValue : tempValList)
                         {
@@ -369,35 +367,28 @@ class EpidemicDataHandler{
                         }
                     }
                     
-                    hashOutputListSize = hashOutputListString.split("#").length;
-                    System.out.println(resultantList.size());
                     for(int i=0;i<resultantList.size();i++)
                     {
-                        System.out.println(resultantList);
                         resultantList.set(i,resultantList.get(i)/hashOutputListSize);
                     }
                     
                     //EpidemicWordFileAvg 
-                    System.out.println("EpidemicWordFileAvg");
                     newEpidemicWordFileAvgList = getEpidemicWordFileAvg(tempList, resultantList);
                     for(int i=3;i<tempList.size();i++)
                     {
                         tempList.set(i, String.valueOf(newEpidemicWordFileAvgList.get(i-3)));
                     }
                     avgString = "";
-                    System.out.println("Temp list " + tempList);
                     for(String temp: tempList)
                     {
                         avgString = avgString + temp + ",";
                     
                     }
                     avgString = avgString.substring(0, avgString.length()-1);
-                    System.out.println("Average string" + avgString);
                     epidemicAvgWriter.println(avgString);
                                     
                     
                     //EpidemicWordFileDiff
-                    System.out.println("EpidemicWordFileDiff");
                     newEpidemicWordFileDiffList = getEpidemicWordFileDiff(tempList, resultantList);
                     
                     for(int i =3;i<tempList.size();i++)
@@ -411,7 +402,6 @@ class EpidemicDataHandler{
                     }
                     avgString = avgString.substring(0, avgString.length()-1);
                     epidemicDiffWriter.println(avgString);
-                    System.out.println(avgString);                                  
             
         } 
         epidemicAvgWriter.close();
@@ -423,8 +413,6 @@ class EpidemicDataHandler{
         List<Double> finalList = new ArrayList<Double>();
         Double temp;
         
-        System.out.println("OrigVecList " + origVecList);
-        System.out.println("ResultantList" + resultantList);
         for(int i=3;i<origVecList.size(); i++)
         {
             finalList.add(Alpha*(Double.parseDouble(origVecList.get(i))));
@@ -436,7 +424,6 @@ class EpidemicDataHandler{
             temp += (1-Alpha) * resultantList.get(i);
             finalList.set(i, temp);
         }   
-        System.out.println("Final list" + finalList);
         return finalList;
     }
     
@@ -445,13 +432,11 @@ class EpidemicDataHandler{
         List<Double> finalList = new ArrayList<Double>();
         Double temp;
         
-        System.out.println("OrigVecList" + origVecList);
         for(int i=3;i<origVecList.size();i++)
         {
             temp = (Double.parseDouble(origVecList.get(i)) - resultantList.get(i-3))/Double.parseDouble(origVecList.get(i)); 
             finalList.add(temp);
         }
-        System.out.println("Final list" + finalList);
         return finalList;
     }
     
@@ -479,7 +464,6 @@ class EpidemicDataHandler{
 
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
-                System.out.println("File " + file.getName());
                 //Task 1 - a
                 logger.info("Task 1 -a");
                 valuesList = muObj.readCsv(file, logger);
