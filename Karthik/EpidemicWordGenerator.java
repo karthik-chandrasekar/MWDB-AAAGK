@@ -72,7 +72,7 @@ class EpidemicDataHandler{
  
     List<Double> bandsList;
     List<String> bandRepList;
-    Double Alpha = 0.3;
+    Double Alpha = 0.345;
     
     public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
     {
@@ -161,14 +161,12 @@ class EpidemicDataHandler{
         return normalizedValuesList;
     }
     
-    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger, HashMap<String, String> epidemicWordFileHash, List<String> epidemicWordFileValuesList)
+    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger, HashMap<String, String> epidemicWordFileHash, List<String> epidemicWordFileValuesList, int window, int shift)
     {
         
         List<String> valueList = null;
         List<String> timeList;
         List<String> outputList;
-        int window = 3;
-        int shift = 2;
         int valueSize ;
         String temp;
         String delim = ",";
@@ -177,10 +175,9 @@ class EpidemicDataHandler{
         String opListStringDelim="#";
         timeList = headerValueColumnMap.get("time");
         
-        System.out.println(bandsList);
-        System.out.println(bandRepList);
         logger.info(fileName);
-        System.out.println(headerList);
+        
+       
         
         for(String header: headerList)      
         {
@@ -445,6 +442,7 @@ class EpidemicDataHandler{
         
         String dirPath = "/Users/karthikchandrasekar/Downloads/sampledata_P1_F14/Epidemic Simulation Datasets";
         //String dirPath = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
+        String inputDirPath = "";
         MyUtil muObj = new MyUtil();
         Double maxValue = 0.0;
         List<List<String>> valuesList;
@@ -452,14 +450,40 @@ class EpidemicDataHandler{
         HashMap<String, List<String>> headerValueColumnMap;
         HashMap<String, String> epidemicWordFileHash = new HashMap<String, String>();
         List<String> epidemicFileValuesList = new ArrayList<String>();
-
+        int window,shift;
         
         try
         {                       
         
             String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
             PrintWriter writer = new PrintWriter(outputDir+"EpidemicWordFile", "UTF-8");
-
+            Scanner scInput = new Scanner(System.in);
+            
+            System.out.println("Enter input directory");
+            if(scInput.hasNextLine())
+            {
+                inputDirPath = scInput.nextLine();
+                if (!inputDirPath.isEmpty())
+                {
+                    dirPath = inputDirPath;
+                }
+            }
+            
+            System.out.println("Enter window length");
+            window = Integer.parseInt(scInput.nextLine());
+            
+            System.out.println("Enter shift length");
+            shift = Integer.parseInt(scInput.nextLine());
+            
+            
+            //Bands Generator
+            logger.info("Bands generator");
+            BandsGenerator bg = new BandsGenerator();
+            bg.main(logger);
+            bandsList = bg.bandsList;
+            bandRepList = bg.bandRepList;
+            
+            
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
                 //Task 1 - a
@@ -467,23 +491,18 @@ class EpidemicDataHandler{
                 maxValue = findMax(valuesList);
                 valuesList = normalizeData(valuesList, maxValue);
                 dumpInFile(valuesList, file.getName());
-                
-                //Bands Generator
-                logger.info("Bands generator");
-                BandsGenerator bg = new BandsGenerator();
-                bg.main(logger);
-                bandsList = bg.bandsList;
-                bandRepList = bg.bandRepList;
+                          
                
                 //Task 1 - c
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
-                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger, epidemicWordFileHash, epidemicFileValuesList);
+                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger, epidemicWordFileHash, epidemicFileValuesList, window, shift);
                
                 valuesList = null;
                 headerValueColumnMap = null;
-                logger.info("End of task 1"); 
             }
+            logger.info("End of task 1"); 
+
             
             writer.close();
             
@@ -493,6 +512,14 @@ class EpidemicDataHandler{
             adjacencyHashMap = formAdjacencyHashMap();
             generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap);
             logger.info("End of task 2");        
+            
+            
+            //Task 3
+            String enteredFile;
+            System.out.println("Enter a file name");
+            enteredFile = scInput.nextLine();
+            
+            
             
         }
         catch(Exception e)
@@ -506,10 +533,16 @@ class BandsGenerator{
     
     List<Double> bandsList = new ArrayList<Double>();
     List<String> bandRepList; 
-
     
     public void main(Logger logger) throws MatlabConnectionException, MatlabInvocationException{
         
+        int r;
+        System.out.println("Enter r");
+        Scanner scInput = new Scanner(System.in);
+        r = Integer.parseInt(scInput.nextLine());
+        System.out.println("Entered r value is " + r);
+        
+                
         /***
          //Create a proxy, which we will use to control MATLAB
          MatlabProxyFactory factory = new MatlabProxyFactory();
@@ -528,8 +561,8 @@ class BandsGenerator{
         logger.info("Inside band generator");
  
         bandsList.add(0.0);
-        bandsList.add(0.25);
-        bandsList.add(0.5);
+        bandsList.add(0.8176);
+        bandsList.add(0.9924);
         bandsList.add(1.0);
         
         getBandRepList();
@@ -566,4 +599,5 @@ public static void main(String args[]) throws Exception
         dn.main(logger);
     }   
 }
+
 
