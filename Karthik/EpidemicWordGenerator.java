@@ -668,7 +668,7 @@ class BandsGenerator{
         System.out.println("Entered r value is " + r);
         
                 
-        /***
+        
          //Create a proxy, which we will use to control MATLAB
          MatlabProxyFactory factory = new MatlabProxyFactory();
          MatlabProxy proxy = factory.getProxy();
@@ -676,19 +676,19 @@ class BandsGenerator{
          //set matlab path
          String path = "cd('/Users/karthikchandrasekar/Documents/MATLAB')";
          proxy.eval(path);
-         proxy.eval("JavaMatConn");
-         
-          * Call matlab function to get back band values
-          * 
-          *          proxy.disconnect();        
-          */
+         proxy.setVariable("r", r);
+         proxy.eval("res=quantization(r)");
+         double[] bands = (double[]) proxy.getVariable("res");
+         proxy.disconnect();
         
         logger.info("Inside band generator");
  
-        bandsList.add(0.0);
-        bandsList.add(0.8176);
-        bandsList.add(0.9924);
-        bandsList.add(1.0);
+        for(int i=0;i<bands.length;i++)
+        {
+            bandsList.add(bands[i]);
+        }
+    
+        System.out.println("Bands List " + bandsList);
         
         getBandRepList();
     }
