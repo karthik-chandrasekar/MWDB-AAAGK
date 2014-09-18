@@ -161,12 +161,13 @@ class EpidemicDataHandler{
         return normalizedValuesList;
     }
     
-    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger, HashMap<String, String> epidemicWordFileHash, List<String> epidemicWordFileValuesList, int window, int shift)
+    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger, HashMap<String, String> epidemicWordFileHash, List<String> epidemicWordFileValuesList, int window, int shift, String enteredFile)
     {
         
         List<String> valueList = null;
         List<String> timeList;
         List<String> outputList;
+        List<Double> vectorList;
         int valueSize ;
         String temp;
         String delim = ",";
@@ -177,6 +178,11 @@ class EpidemicDataHandler{
         
         logger.info(fileName);
         
+        List<Double> maxEpidemicWordFileVector = null;
+        List<Double> minEpidemicWordFileVector = null;
+        Double maxStrength = 0.0;
+        Double curStrength = 0.0;
+        Double minStrength = 10000.0;
        
         
         for(String header: headerList)      
@@ -204,10 +210,27 @@ class EpidemicDataHandler{
                 if (startIndex+window < valueSize)
                 {
                     outputList.add(timeList.get(startIndex));
+                    vectorList = new ArrayList<Double>();
                     for(int j=startIndex; j<startIndex+window;j++)
                     {
                         temp = getBandRep(valueList.get(j));
                         outputList.add(temp);
+                        vectorList.add(Double.parseDouble(temp));
+                    }
+                    
+                    if (outputList.get(0).equals(enteredFile))
+                    {
+                        curStrength = getTwoNorm(vectorList);
+                        if (curStrength > maxStrength)
+                        {
+                            maxEpidemicWordFileVector = vectorList;
+                            maxStrength = curStrength;
+                        }
+                        else if(curStrength < minStrength)
+                        {
+                            minEpidemicWordFileVector = vectorList;
+                            minStrength = curStrength;
+                        }
                     }
                     
                     for(String output: outputList)
@@ -229,6 +252,10 @@ class EpidemicDataHandler{
             opListString = opListString.substring(0, opListString.length()-1);
             epidemicWordFileHash.put(fileName+"-"+header, opListString);
         }  
+        System.out.println("maxEpidemicWordFileVector  " + maxEpidemicWordFileVector);
+        System.out.println("minEpidemicWordFileVector " + minEpidemicWordFileVector);
+        System.out.println("maxStrength " + maxStrength);
+        System.out.println("minStrength "+ minStrength );
     }
     
     String getBandRep(String value)
@@ -288,7 +315,7 @@ class EpidemicDataHandler{
     }
       
     
-    void generateEpidemicAvgDiffFile(HashMap<String, String> epidemicWordFileHash, List<String> epidemicFileValuesList, HashMap<String, List<String>> adjacencyHashMap) throws Exception
+    void generateEpidemicAvgDiffFile(HashMap<String, String> epidemicWordFileHash, List<String> epidemicFileValuesList, HashMap<String, List<String>> adjacencyHashMap, String enteredFile) throws Exception
     {
         
         List<String> tempList;
@@ -308,6 +335,20 @@ class EpidemicDataHandler{
         PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"EpidemicWordFileAvg", "UTF-8");
         
         PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF-8");
+        
+        List<Double> maxEpidemicWordFileAvgVector = null;
+        List<Double> minEpidemicWordFileAvgVector = null;
+        Double maxStrengthAvg = 0.0;
+        Double curStrengthAvg = 0.0;
+        Double minStrengthAvg = 10000.0;
+        
+        List<Double> maxEpidemicWordFileDiffVector = null;
+        List<Double> minEpidemicWordFileDiffVector = null;
+        Double maxStrengthDiff = 0.0;
+        Double curStrengthDiff = 0.0;
+        Double minStrengthDiff = 10000.0;
+        
+           
         
         for(String entry : epidemicFileValuesList)
         {                       
@@ -369,6 +410,23 @@ class EpidemicDataHandler{
                     
                     //EpidemicWordFileAvg 
                     newEpidemicWordFileAvgList = getEpidemicWordFileAvg(tempList, resultantList);
+                    
+                   
+                    if (tempList.get(0).equals(enteredFile))
+                    {
+                        curStrengthAvg = getTwoNorm(newEpidemicWordFileAvgList);
+                        if (curStrengthAvg > maxStrengthAvg)
+                        {
+                            maxEpidemicWordFileAvgVector = newEpidemicWordFileAvgList;
+                            maxStrengthAvg = curStrengthAvg;
+                        }
+                        else if(curStrengthAvg < minStrengthAvg)
+                        {
+                            minEpidemicWordFileAvgVector = newEpidemicWordFileAvgList;
+                            minStrengthAvg = curStrengthAvg;
+                        }
+                    }
+                        
                     for(int i=3;i<tempList.size();i++)
                     {
                         tempList.set(i, String.valueOf(newEpidemicWordFileAvgList.get(i-3)));
@@ -386,6 +444,22 @@ class EpidemicDataHandler{
                     //EpidemicWordFileDiff
                     newEpidemicWordFileDiffList = getEpidemicWordFileDiff(tempList, resultantList);
                     
+                    if (tempList.get(0).equals(enteredFile))
+                    {
+                        curStrengthDiff = getTwoNorm(newEpidemicWordFileDiffList);
+                        if (curStrengthDiff > maxStrengthDiff)
+                        {
+                            maxEpidemicWordFileDiffVector = newEpidemicWordFileDiffList;
+                            maxStrengthDiff = curStrengthDiff;
+                        }
+                        else if(curStrengthDiff < minStrengthDiff)
+                        {
+                            minEpidemicWordFileDiffVector = newEpidemicWordFileDiffList;
+                            minStrengthDiff = curStrengthDiff;
+                        }
+                    }
+                    
+                    
                     for(int i =3;i<tempList.size();i++)
                     {
                         tempList.set(i, String.valueOf(newEpidemicWordFileDiffList.get(i-3)));
@@ -401,6 +475,26 @@ class EpidemicDataHandler{
         } 
         epidemicAvgWriter.close();
         epidemicDiffWriter.close(); 
+        
+        System.out.println("maxEpidemicWordFileVectorAvg  " + maxEpidemicWordFileAvgVector);
+        System.out.println("minEpidemicWordFileVectorAvg " + minEpidemicWordFileAvgVector);
+        System.out.println("maxStrengthAvg " + maxStrengthAvg);
+        System.out.println("minStrengthAvg "+ minStrengthAvg);
+        
+        System.out.println("maxEpidemicWordFileVectorDiff  " + maxEpidemicWordFileDiffVector);
+        System.out.println("minEpidemicWordFileVectorDiff " + minEpidemicWordFileDiffVector);
+        System.out.println("maxStrength " + maxStrengthDiff);
+        System.out.println("minStrength "+ minStrengthDiff );
+    }
+   
+    Double getTwoNorm(List<Double> inputVector)
+    {
+        Double sum=0.0;
+        for(Double value : inputVector)
+        {
+            sum+=value * value;
+        }
+        return Math.sqrt(sum);
     }
     
     List<Double> getEpidemicWordFileAvg(List<String> origVecList, List<Double> resultantList)
@@ -484,6 +578,11 @@ class EpidemicDataHandler{
             bandRepList = bg.bandRepList;
             
             
+            String enteredFile;
+            
+            System.out.println("Enter a file name for task 3");
+            enteredFile = scInput.nextLine();
+            
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
                 //Task 1 - a
@@ -496,7 +595,7 @@ class EpidemicDataHandler{
                 //Task 1 - c
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
-                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger, epidemicWordFileHash, epidemicFileValuesList, window, shift);
+                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger, epidemicWordFileHash, epidemicFileValuesList, window, shift, enteredFile);
                
                 valuesList = null;
                 headerValueColumnMap = null;
@@ -510,14 +609,14 @@ class EpidemicDataHandler{
                      
             HashMap<String, List<String>> adjacencyHashMap;        
             adjacencyHashMap = formAdjacencyHashMap();
-            generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap);
+            generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap, enteredFile);
             logger.info("End of task 2");        
             
             
             //Task 3
-            String enteredFile;
-            System.out.println("Enter a file name");
-            enteredFile = scInput.nextLine();
+           
+            
+            
             
             
             
