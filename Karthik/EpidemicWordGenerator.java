@@ -27,8 +27,7 @@ class MyUtil{
             //Collect values list
             while(scannerObj.hasNextLine())
             {
-                valuesList.add(Arrays.asList(scannerObj.nextLine().split(",")));
-                
+                valuesList.add(Arrays.asList(scannerObj.nextLine().split(",")));               
             }
             
             return valuesList;        
@@ -73,7 +72,7 @@ class EpidemicDataHandler{
  
     List<Double> bandsList;
     List<String> bandRepList;
-    HashMap<String, List<String>> epidemicWordFileHash = new HashMap<String, List<String>>();
+    Double Alpha = 0.345;
     
     public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
     {
@@ -162,26 +161,29 @@ class EpidemicDataHandler{
         return normalizedValuesList;
     }
     
-    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger)
+    void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger, HashMap<String, String> epidemicWordFileHash, List<String> epidemicWordFileValuesList, int window, int shift, String enteredFile)
     {
         
         List<String> valueList = null;
         List<String> timeList;
         List<String> outputList;
-        int window = 3;
-        int shift = 2;
+        List<Double> vectorList;
         int valueSize ;
         String temp;
         String delim = ",";
         String outputString;
-        List<String> opList;
-        
+        String opListString;
+        String opListStringDelim="#";
         timeList = headerValueColumnMap.get("time");
         
-        System.out.println(bandsList);
-        System.out.println(bandRepList);
         logger.info(fileName);
-        System.out.println(headerList);
+        
+        List<Double> maxEpidemicWordFileVector = null;
+        List<Double> minEpidemicWordFileVector = null;
+        Double maxStrength = 0.0;
+        Double curStrength = 0.0;
+        Double minStrength = 10000.0;
+       
         
         for(String header: headerList)      
         {
@@ -191,12 +193,10 @@ class EpidemicDataHandler{
                 continue;
             }
             
-            logger.info("File name " + fileName + "  " + header);
             valueList = headerValueColumnMap.get(header);       
             valueSize = valueList.size();
-            opList = new ArrayList<String>();
             
-            
+            opListString = "";
             //System.out.println("Value size " + valueSize);
             for(int startIndex=0;startIndex<valueSize;)
             {
@@ -210,10 +210,27 @@ class EpidemicDataHandler{
                 if (startIndex+window < valueSize)
                 {
                     outputList.add(timeList.get(startIndex));
+                    vectorList = new ArrayList<Double>();
                     for(int j=startIndex; j<startIndex+window;j++)
                     {
                         temp = getBandRep(valueList.get(j));
                         outputList.add(temp);
+                        vectorList.add(Double.parseDouble(temp));
+                    }
+                    
+                    if (outputList.get(0).equals(enteredFile))
+                    {
+                        curStrength = getTwoNorm(vectorList);
+                        if (curStrength > maxStrength)
+                        {
+                            maxEpidemicWordFileVector = vectorList;
+                            maxStrength = curStrength;
+                        }
+                        else if(curStrength < minStrength)
+                        {
+                            minEpidemicWordFileVector = vectorList;
+                            minStrength = curStrength;
+                        }
                     }
                     
                     for(String output: outputList)
@@ -222,8 +239,9 @@ class EpidemicDataHandler{
                     }
                     outputString = outputString.substring(0, outputString.length()-1);
                     writer.println(outputString);
+                    epidemicWordFileValuesList.add(outputString);
                                       
-                    opList.add(outputString);                    
+                    opListString += outputString + opListStringDelim;                    
                     startIndex = startIndex + shift;
                 }
                 else
@@ -231,8 +249,13 @@ class EpidemicDataHandler{
                     break;
                 }
             }
-            epidemicWordFileHash.put(fileName+"-"+header, opList);
+            opListString = opListString.substring(0, opListString.length()-1);
+            epidemicWordFileHash.put(fileName+"-"+header, opListString);
         }  
+        System.out.println("maxEpidemicWordFileVector  " + maxEpidemicWordFileVector);
+        System.out.println("minEpidemicWordFileVector " + minEpidemicWordFileVector);
+        System.out.println("maxStrength " + maxStrength);
+        System.out.println("minStrength "+ minStrength );
     }
     
     String getBandRep(String value)
@@ -252,7 +275,7 @@ class EpidemicDataHandler{
     }
     
     
-    public HashMap<String, List<String>> formAdjacencyHashMap()
+    public HashMap<String, List<String>> formAdjacencyHashMap() throws Exception
     {
         
         //Parse adjacency matrix and form a state, adjacent states hash map
@@ -265,10 +288,9 @@ class EpidemicDataHandler{
         
         String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
         
-        Scanner scannerObj = new Scanner(inputFilePath);
+        Scanner scannerObj = new Scanner(new File(inputFilePath));
         
         headerList = Arrays.asList(scannerObj.nextLine().split(","));
-        
         while(scannerObj.hasNextLine())
         {
             count = 0; 
@@ -278,24 +300,235 @@ class EpidemicDataHandler{
                 if(count == 0)
                 {
                     header = value;
+                    count++;
                     continue;
                 }
                 else if (Integer.parseInt(value)==1)
                 {
-                    valueList.add(headerList.get(count));
+                    valueList.add("US-"+headerList.get(count));
                 }
                 count ++;
             }
-            adjacencyHashMap.put(header, valueList);
+            adjacencyHashMap.put("US-"+header, valueList);
         }     
         return adjacencyHashMap;
     }
+      
     
-    
-    public void generateEpidemicFile()
+    void generateEpidemicAvgDiffFile(HashMap<String, String> epidemicWordFileHash, List<String> epidemicFileValuesList, HashMap<String, List<String>> adjacencyHashMap, String enteredFile) throws Exception
     {
         
+        List<String> tempList;
+        String hashOutputListString;
+        String key;
+        Double tempDouble;
+        int count;
+        List<Double> resultantList;
+        List<Double> newEpidemicWordFileAvgList;
+        List<Double> newEpidemicWordFileDiffList;
+        int hashOutputListSize;
+        String diffString;
+        String avgString;
+        List<String> neighborList;
+        
+        String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
+        PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"EpidemicWordFileAvg", "UTF-8");
+        
+        PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF-8");
+        
+        List<Double> maxEpidemicWordFileAvgVector = null;
+        List<Double> minEpidemicWordFileAvgVector = null;
+        Double maxStrengthAvg = 0.0;
+        Double curStrengthAvg = 0.0;
+        Double minStrengthAvg = 10000.0;
+        
+        List<Double> maxEpidemicWordFileDiffVector = null;
+        List<Double> minEpidemicWordFileDiffVector = null;
+        Double maxStrengthDiff = 0.0;
+        Double curStrengthDiff = 0.0;
+        Double minStrengthDiff = 10000.0;
+        
+           
+        
+        for(String entry : epidemicFileValuesList)
+        {                       
+                    tempList = Arrays.asList(entry.split(",")); 
+                    if (tempList.isEmpty()){continue;}
+                    resultantList = new ArrayList<Double>();
+                    for(int i=0;i<tempList.size()-3;i++)
+                    {
+                        resultantList.add(0.0);
+                    }
+                    key = tempList.get(0)+"-"+tempList.get(1);
+                    
+                    neighborList = adjacencyHashMap.get(tempList.get(1));
+                    
+                    if(neighborList.isEmpty())
+                    {
+                        continue;
+                    }
+                    
+                    hashOutputListString = "";
+                    for(String neighbor: neighborList)
+                    {
+                        hashOutputListString += epidemicWordFileHash.get(tempList.get(0)+"-"+neighbor) + "#";
+                    }
+                    hashOutputListString = hashOutputListString.substring(0, hashOutputListString.length()-1);
+                    
+                    if (hashOutputListString == null)
+                    {
+                        System.out.println("Value not present for key  " + key);
+                        continue;
+                    }
+                    List<String> tempValList;
+                    hashOutputListSize = 0;
+                    for(String temp: hashOutputListString.split("#"))
+                    {
+                        if (temp.isEmpty()){continue;}
+                        tempValList = Arrays.asList(temp.split(","));
+                        if (tempValList.isEmpty() || tempList.isEmpty()){continue;}
+                        if(!(tempValList.get(2).equals(tempList.get(2))))
+                        {
+                            continue;
+                        }
+                        hashOutputListSize++;
+                        count = 0;
+                        for(String tempValue : tempValList)
+                        {
+                            if(count < 3){count++;continue;}
+                            tempDouble = resultantList.get(count-3);
+                            tempDouble += Double.parseDouble(tempValList.get(count));
+                            resultantList.set(count-3, tempDouble);
+                            count++;
+                        }
+                    }
+                    
+                    for(int i=0;i<resultantList.size();i++)
+                    {
+                        resultantList.set(i,resultantList.get(i)/hashOutputListSize);
+                    }
+                    
+                    //EpidemicWordFileAvg 
+                    newEpidemicWordFileAvgList = getEpidemicWordFileAvg(tempList, resultantList);
+                    
+                   
+                    if (tempList.get(0).equals(enteredFile))
+                    {
+                        curStrengthAvg = getTwoNorm(newEpidemicWordFileAvgList);
+                        if (curStrengthAvg > maxStrengthAvg)
+                        {
+                            maxEpidemicWordFileAvgVector = newEpidemicWordFileAvgList;
+                            maxStrengthAvg = curStrengthAvg;
+                        }
+                        else if(curStrengthAvg < minStrengthAvg)
+                        {
+                            minEpidemicWordFileAvgVector = newEpidemicWordFileAvgList;
+                            minStrengthAvg = curStrengthAvg;
+                        }
+                    }
+                        
+                    for(int i=3;i<tempList.size();i++)
+                    {
+                        tempList.set(i, String.valueOf(newEpidemicWordFileAvgList.get(i-3)));
+                    }
+                    avgString = "";
+                    for(String temp: tempList)
+                    {
+                        avgString = avgString + temp + ",";
+                    
+                    }
+                    avgString = avgString.substring(0, avgString.length()-1);
+                    epidemicAvgWriter.println(avgString);
+                                    
+                    
+                    //EpidemicWordFileDiff
+                    newEpidemicWordFileDiffList = getEpidemicWordFileDiff(tempList, resultantList);
+                    
+                    if (tempList.get(0).equals(enteredFile))
+                    {
+                        curStrengthDiff = getTwoNorm(newEpidemicWordFileDiffList);
+                        if (curStrengthDiff > maxStrengthDiff)
+                        {
+                            maxEpidemicWordFileDiffVector = newEpidemicWordFileDiffList;
+                            maxStrengthDiff = curStrengthDiff;
+                        }
+                        else if(curStrengthDiff < minStrengthDiff)
+                        {
+                            minEpidemicWordFileDiffVector = newEpidemicWordFileDiffList;
+                            minStrengthDiff = curStrengthDiff;
+                        }
+                    }
+                    
+                    
+                    for(int i =3;i<tempList.size();i++)
+                    {
+                        tempList.set(i, String.valueOf(newEpidemicWordFileDiffList.get(i-3)));
+                    }
+                    diffString = "";
+                    for(String temp: tempList)
+                    {
+                        diffString = diffString + temp + ",";
+                    }
+                    diffString = diffString.substring(0, diffString.length()-1);
+                    epidemicDiffWriter.println(diffString);
+            
+        } 
+        epidemicAvgWriter.close();
+        epidemicDiffWriter.close(); 
+        
+        System.out.println("maxEpidemicWordFileVectorAvg  " + maxEpidemicWordFileAvgVector);
+        System.out.println("minEpidemicWordFileVectorAvg " + minEpidemicWordFileAvgVector);
+        System.out.println("maxStrengthAvg " + maxStrengthAvg);
+        System.out.println("minStrengthAvg "+ minStrengthAvg);
+        
+        System.out.println("maxEpidemicWordFileVectorDiff  " + maxEpidemicWordFileDiffVector);
+        System.out.println("minEpidemicWordFileVectorDiff " + minEpidemicWordFileDiffVector);
+        System.out.println("maxStrength " + maxStrengthDiff);
+        System.out.println("minStrength "+ minStrengthDiff );
     }
+   
+    Double getTwoNorm(List<Double> inputVector)
+    {
+        Double sum=0.0;
+        for(Double value : inputVector)
+        {
+            sum+=value * value;
+        }
+        return Math.sqrt(sum);
+    }
+    
+    List<Double> getEpidemicWordFileAvg(List<String> origVecList, List<Double> resultantList)
+    {
+        List<Double> finalList = new ArrayList<Double>();
+        Double temp;
+        
+        for(int i=3;i<origVecList.size(); i++)
+        {
+            finalList.add(Alpha*(Double.parseDouble(origVecList.get(i))));
+        }
+        
+        for(int i=0;i<resultantList.size();i++)
+        {
+            temp = finalList.get(i);
+            temp += (1-Alpha) * resultantList.get(i);
+            finalList.set(i, temp);
+        }   
+        return finalList;
+    }
+    
+    List<Double>  getEpidemicWordFileDiff(List<String> origVecList, List<Double> resultantList)
+    {
+        List<Double> finalList = new ArrayList<Double>();
+        Double temp;
+        
+        for(int i=3;i<origVecList.size();i++)
+        {
+            temp = (Double.parseDouble(origVecList.get(i)) - resultantList.get(i-3))/Double.parseDouble(origVecList.get(i)); 
+            finalList.add(temp);
+        }
+        return finalList;
+    }
+    
     
     
     public void main(Logger logger)
@@ -303,62 +536,94 @@ class EpidemicDataHandler{
         
         String dirPath = "/Users/karthikchandrasekar/Downloads/sampledata_P1_F14/Epidemic Simulation Datasets";
         //String dirPath = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
+        String inputDirPath = "";
         MyUtil muObj = new MyUtil();
         Double maxValue = 0.0;
         List<List<String>> valuesList;
         List<String> headerList;
         HashMap<String, List<String>> headerValueColumnMap;
-
+        HashMap<String, String> epidemicWordFileHash = new HashMap<String, String>();
+        List<String> epidemicFileValuesList = new ArrayList<String>();
+        int window,shift;
         
         try
         {                       
         
             String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
             PrintWriter writer = new PrintWriter(outputDir+"EpidemicWordFile", "UTF-8");
-
+            Scanner scInput = new Scanner(System.in);
+            
+            System.out.println("Enter input directory");
+            if(scInput.hasNextLine())
+            {
+                inputDirPath = scInput.nextLine();
+                if (!inputDirPath.isEmpty())
+                {
+                    dirPath = inputDirPath;
+                }
+            }
+            
+            System.out.println("Enter window length");
+            window = Integer.parseInt(scInput.nextLine());
+            
+            System.out.println("Enter shift length");
+            shift = Integer.parseInt(scInput.nextLine());
+            
+            
+            //Bands Generator
+            logger.info("Bands generator");
+            BandsGenerator bg = new BandsGenerator();
+            bg.main(logger);
+            bandsList = bg.bandsList;
+            bandRepList = bg.bandRepList;
+            
+            
+            String enteredFile;
+            
+            System.out.println("Enter a file name for task 3");
+            enteredFile = scInput.nextLine();
+            
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
-                System.out.println("File " + file.getName());
                 //Task 1 - a
-                logger.info("Task 1 -a");
                 valuesList = muObj.readCsv(file, logger);
                 maxValue = findMax(valuesList);
-                logger.info(String.valueOf(maxValue));
                 valuesList = normalizeData(valuesList, maxValue);
                 dumpInFile(valuesList, file.getName());
-                
-                //Bands Generator
-                logger.info("Bands generator");
-                BandsGenerator bg = new BandsGenerator();
-                bg.main(logger);
-                bandsList = bg.bandsList;
-                bandRepList = bg.bandRepList;
+                          
                
                 //Task 1 - c
-                logger.info("Task 1-c");
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
-                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger);
+                generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger, epidemicWordFileHash, epidemicFileValuesList, window, shift, enteredFile);
                
-
-                logger.info("End of all tasks"); 
+                valuesList = null;
+                headerValueColumnMap = null;
             }
+            logger.info("End of task 1"); 
+
             
             writer.close();
             
             //Task 2
-            
-            
+                     
             HashMap<String, List<String>> adjacencyHashMap;        
             adjacencyHashMap = formAdjacencyHashMap();
-            //generateEpidemicAvgFile()
-       
+            generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap, enteredFile);
+            logger.info("End of task 2");        
+            
+            
+            //Task 3
+           
+            
+            
             
             
             
         }
         catch(Exception e)
         {
+            e.printStackTrace(System.out);
         }   
     }    
 }
@@ -367,10 +632,16 @@ class BandsGenerator{
     
     List<Double> bandsList = new ArrayList<Double>();
     List<String> bandRepList; 
-
     
     public void main(Logger logger) throws MatlabConnectionException, MatlabInvocationException{
         
+        int r;
+        System.out.println("Enter r");
+        Scanner scInput = new Scanner(System.in);
+        r = Integer.parseInt(scInput.nextLine());
+        System.out.println("Entered r value is " + r);
+        
+                
         /***
          //Create a proxy, which we will use to control MATLAB
          MatlabProxyFactory factory = new MatlabProxyFactory();
@@ -389,8 +660,8 @@ class BandsGenerator{
         logger.info("Inside band generator");
  
         bandsList.add(0.0);
-        bandsList.add(0.25);
-        bandsList.add(0.5);
+        bandsList.add(0.8176);
+        bandsList.add(0.9924);
         bandsList.add(1.0);
         
         getBandRepList();
@@ -427,4 +698,5 @@ public static void main(String args[]) throws Exception
         dn.main(logger);
     }   
 }
+
 
