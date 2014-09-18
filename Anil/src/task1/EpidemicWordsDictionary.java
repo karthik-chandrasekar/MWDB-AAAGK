@@ -32,10 +32,15 @@ public class EpidemicWordsDictionary {
 	public static String foldername = "E:\\MWDB\\sampledata_P1_F14\\sampledata_P1_F14\\Epidemic Simulation Datasets\\";
 	public static HashMap<Integer, Double> BandCenters = new HashMap<>();
 	public static String new_folder_path = foldername+"\\normalized_files\\";
+	public static String epidemic_word_file_path = foldername+"\\epidemic_word_files\\";
 	public static Charset charset = Charset.forName("ISO-8859-1");
-	public static int shift = 1;
-	public static int winsize = 3;
+	public static int shift = 3;
+	public static int winsize = 5;
 	public static ArrayList<Double> bandboundaries;
+	public static int num_files = 0;
+	public static int skip_length = 0;
+	static MatlabProxyFactory factory = new MatlabProxyFactory();		 
+	static MatlabProxy proxy;
 	
 	public void normalizeFiles(ArrayList<File> filelist) throws IOException{
 		
@@ -59,7 +64,7 @@ public class EpidemicWordsDictionary {
 	        	}
 	        }
 	    }
-	    
+//	    System.out.println("maximum value is"+maxvalue);
 	    /*Normalizing the values and writing into different values*/
 	    
 	    String new_filename = new_folder_path+"n"+file_name;
@@ -69,7 +74,8 @@ public class EpidemicWordsDictionary {
 	        String[] rowval = rows.get(i).split(",");
 	        for(int j=2;j<rowval.length;j++){
 	        	Double nval = Double.parseDouble(rowval[j])/maxvalue;
-	        	System.out.println(String.valueOf(nval));
+//	        	nval = (double)Math.round(nval * 1000) / 1000;
+//	        	System.out.println(String.valueOf(nval));
 	        	writer.write(String.valueOf(nval));
 	        	writer.write(",");
 	        }
@@ -85,6 +91,8 @@ public class EpidemicWordsDictionary {
 		 //set matlab path
 		 String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
 		 proxy.eval(path);
+//		 Object[] bounds = {1,3,4,5};
+//		 proxy.set("bounds",bounds);
 		 //call svd
 		 proxy.eval("metric");
 		 //Disconnect the proxy from MATLAB
@@ -110,21 +118,18 @@ public class EpidemicWordsDictionary {
 	
 	
 	public void findQuantizationBands(int num_bands) throws MatlabConnectionException, MatlabInvocationException, FileNotFoundException{
-//		 MatlabProxyFactory factory = new MatlabProxyFactory();
-//		 MatlabProxy proxy = factory.getProxy();
-//		 //set matlab path
-//		 String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
-//		 proxy.eval(path);
-//		 //call svd
-//		 proxy.setVariable("r", num_bands);
-//		 proxy.eval("quantization");
-//		 Object band_lengths = proxy.getVariable("band_lengths");
-////		 Double[] bands = new Double[num_bands];
-////		 bands = (Double[]) band_lengths;
-//		 //Disconnect the proxy from MATLAB
-//		 proxy.disconnect();
-		 
-		 Double[] bands = {0.5763,0.3141,0.0932,0.0150,0.0013};
+		 MatlabProxyFactory factory = new MatlabProxyFactory();
+		 MatlabProxy proxy = factory.getProxy();
+		 //set matlab path
+		 String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
+		 proxy.eval(path);
+		 proxy.setVariable("r", num_bands);
+		 proxy.eval("res=quantization(r)");
+		 double[] bands= (double[]) proxy.getVariable("res");
+		 proxy.disconnect();
+//		 System.out.println("bands"+bands.length);
+//		 Double[] bands = {0.5763,0.3141,0.0932,0.0150,0.0013};
+//		 Double[] bands = {0.8176293512220892,0.9924021000786353,1.0000000000000002};
 		 bandboundaries = new ArrayList<>();
 //		 bandboundaries.add(0.0);
 		 for(int i=0;i<bands.length;i++){
@@ -133,9 +138,12 @@ public class EpidemicWordsDictionary {
 			 else
 				 bandboundaries.add(bandboundaries.get(i-1)+bands[i]);
 		 }
+		 PrintWriter writer2 = new PrintWriter("band_boundary_representation.txt");
 		 for(int i=0;i<bandboundaries.size();i++){
 			 System.out.println(bandboundaries.get(i));
+			 writer2.write(bandboundaries.get(i)+"\n");
 		 }
+		 writer2.close();
 		 PrintWriter writer = new PrintWriter("band_center_representation.txt");
 		 for(int i=0;i<bandboundaries.size();i++){
 			 double center = 0.0;
@@ -146,80 +154,150 @@ public class EpidemicWordsDictionary {
 			 BandCenters.put(i, center);
 			 writer.write("\n");
 			 writer.write(String.valueOf(BandCenters.get(i+1)));
-			 System.out.println((i+1)+","+center);
+//			 System.out.println((i+1)+","+center);
 		 }
 		 writer.close();
 	}
 	
 	public void constructWeightVectors() throws IOException{
 		ArrayList<File> nfiles = listfiles(new_folder_path);
-		PrintWriter writer = new PrintWriter("epidemic_word_file.txt");
+		PrintWriter writer = new PrintWriter("epidemic_word_file.csv");
+		PrintWriter writer1 = new PrintWriter("epidemic_word_log_file.txt");
 		for(int x=0;x<nfiles.size();x++)
 		{
 			File nfile = nfiles.get(x);
 			List<String> rows = Files.readAllLines(nfile.toPath(), charset);
-		    String[] headers = rows.get(0).split(",");
-		    for (int i=0;i<headers.length;i++) 
+//			System.out.println("total rows"+rows.size());
+			writer1.write("total rows "+rows.size()+"\n");
+			writer1.write("filename "+nfile.getName());
+			skip_length = (int) Math.floor(rows.size()/shift);
+			int skip = (int)(rows.size()/shift);
+			System.out.println("Skip length is "+skip_length);
+			String[] headers = rows.get(0).split(",");
+			PrintWriter swriter = new PrintWriter(epidemic_word_file_path+nfile.getName());
+			for (int i=0;i<headers.length;i++) 
 		    {
+		    	
+//		    	PrintWriter swriter = new PrintWriter(new BufferedWriter(new FileWriter((i+1)+".csv", true))); 
 		    	int j=0;
-		    	System.out.println("total rows"+rows.size());
+		    	int timer=1;
+//		    	if(i==34 && nfile.getName().equals("n25.csv"))
+//		    		System.out.println("hello");
+		    	writer1.write("Processing State "+(i+1)+"\n");
 		    	while(j<rows.size())
 		    	{
-		    		System.out.println("processing row"+j);
+//		    		System.out.println("processing row "+j);
+		    		writer1.write("processing row "+j+"\n");
 		    		StringBuilder vector = new StringBuilder();
-		    		vector.append(nfile.getName());
+		    		String tempName = nfile.getName().split(".csv")[0];
+		    		tempName = tempName.substring(1);
+		    		vector.append(tempName);
 		    		vector.append(",");
-		    		vector.append(i);
+		    		vector.append(i+1);
+		    		vector.append(",");
+		    		vector.append(timer);
 		    		vector.append(",");
 		    		int cur = j;
 		    		int count = 1;
 		    		while(count <= winsize)
 		    		{
+		    			double outlier = 0.0;
 		    			if(cur<rows.size())
 		    			{
 		    			String[] temprow = rows.get(cur).split(",");
 		    			Double nval = 	Double.parseDouble(temprow[i]);
-		    			System.out.println("curr value is"+nval);
-		    			for(int k=0;k<bandboundaries.size()-1;k++){
-		    				if(k == 0){
-		    					if(nval < bandboundaries.get(k))
-		    						vector.append(String.valueOf(BandCenters.get(k)));
-		    						System.out.println("band is"+k);
-		    						vector.append(",");
-//		    						break;
+//		    			System.out.println("band decision value is"+nval);
+		    			writer1.write("processing win row "+cur+"\n");
+		    			
+		    			writer1.write("band decision value is "+nval+"\n");
+		    			int assign = 0;
+		    			for(int k=0;k<bandboundaries.size()-1;k++)
+		    			{
+//		    				writer1.write("BB is "+bandboundaries.get(k)+"\n");
+		    				if(nval <= bandboundaries.get(k)){
+		    					vector.append(String.valueOf(BandCenters.get(k)));
+//	    						System.out.println("band is"+k);
+	    						writer1.write("band is "+k+"\n");
+	    						vector.append(",");
+	    						assign=1;
+	    						outlier = BandCenters.get(k);
+	    						break;
 		    				}
-		    				else{
-		    					if(nval > bandboundaries.get(k) && nval < bandboundaries.get(k+1) )
-		    					{
-		    						vector.append(String.valueOf(BandCenters.get(k)));
-		    						System.out.println("band is"+k);
-		    						vector.append(",");
-//		    						break;
-		    					}
-		    				}
-		    				
 		    			}
+		    			if(assign == 0){
+		    				vector.append(String.valueOf(BandCenters.get(bandboundaries.size()-1)));
+//    						System.out.println("band is"+bandboundaries.size());
+    						writer1.write("band is "+bandboundaries.size()+"\n");
+    						vector.append(",");
+    						assign=1;
+		    			}
+		    			}
+		    			else{
+		    				vector.append("NAN");
+//    						System.out.println("band is "+"default");
+    						writer1.write("band is "+"default"+"\n");
+    						vector.append(",");
 		    			}
 		    			count++;
 		    			cur++;
 		    		}
 		    		j = j + shift;
+		    		timer = timer + shift;
 		    		vector.append("\n");
-		    		System.out.println(vector.toString());
-		    		writer.write(vector.toString());
+//		    		System.out.println(vector.toString());
+		    		if (vector.toString().endsWith(",\n")) {
+		    			  String temp = vector.toString();
+		    			  temp = temp.substring(0, temp.length() - 2);
+//		    			  System.out.println("Final vector is"+temp);
+		    			  if(!temp.contains("NAN")){
+		    			  writer.write(temp);
+		    			  writer.write("\n");
+		    			  swriter.write(temp);
+		    			  swriter.write("\n");
+		    			  }
+		    			}
 		    	}
 		    }
-
+			swriter.close();
 		}
+		writer.close();
+	}
+	
+	public void constructEpidemicWordAvgFiles() throws MatlabConnectionException, MatlabInvocationException{
+		 String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
+		 proxy.eval(path);
+		 proxy.setVariable("num_files", num_files);
+		 proxy.setVariable("skip_length", skip_length);
+		 proxy.eval("mwdb_task2_a_final(num_files,skip_length)");
+//		 proxy.disconnect();
+	}
+	
+	public void constructEpidemicWordDiffFiles() throws MatlabConnectionException, MatlabInvocationException{
+//		MatlabProxyFactory factory = new MatlabProxyFactory();
+//		 MatlabProxy proxy = factory.getProxy();
+		 num_files = 50;
+		 skip_length = 71;
+		 String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
+		 proxy.eval(path);
+		 proxy.setVariable("num_files", num_files);
+		 proxy.setVariable("skip_length", skip_length);
+		 proxy.eval("mwdb_task2_b_final(num_files,skip_length)");
+//		 proxy.disconnect();
 	}
 	
 	public static void main(String args[]) throws IOException, MatlabConnectionException, MatlabInvocationException{
 		EpidemicWordsDictionary obj = new EpidemicWordsDictionary();
 		boolean nfolder = new File(new_folder_path).mkdir();
+		boolean mfolder = new File(epidemic_word_file_path).mkdir();
 		ArrayList<File> filelist = listfiles(foldername);
+		num_files = filelist.size();
 //		obj.normalizeFiles(filelist);
-		obj.findQuantizationBands(num_bands);
-		obj.constructWeightVectors();
+		proxy = factory.getProxy();
+//		obj.findQuantizationBands(num_bands);
+//		obj.constructWeightVectors();
+//		obj.callMatlab();
+//		obj.constructEpidemicWordAvgFiles();
+		obj.constructEpidemicWordDiffFiles();
 	}
 	
 	
