@@ -297,8 +297,19 @@ class EpidemicDataHandler{
         List<String> valueList;
         int count;
         String header="";
-        
+        String inputLocationFile;
         String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
+        
+        System.out.println("Enter location matrix input file location");
+        Scanner sysInput = new Scanner(System.in);
+        if(sysInput.hasNextLine())
+        {
+            inputLocationFile = sysInput.nextLine();
+            if (!inputLocationFile.isEmpty())
+            {
+                inputFilePath = inputLocationFile;
+            }
+        }
         
         Scanner scannerObj = new Scanner(new File(inputFilePath));
         
@@ -514,8 +525,8 @@ class EpidemicDataHandler{
         
         System.out.println("maxEpidemicWordFileVectorDiff  " + maxEpidemicWordFileDiffVector);
         System.out.println("minEpidemicWordFileVectorDiff " + minEpidemicWordFileDiffVector);
-        System.out.println("maxStrength " + maxStrengthDiff);
-        System.out.println("minStrength "+ minStrengthDiff );
+        System.out.println("maxStrengthDiff " + maxStrengthDiff);
+        System.out.println("minStrengthDiff "+ minStrengthDiff );
     }
    
     Double getTwoNorm(List<Double> inputVector)
@@ -686,6 +697,17 @@ class BandsGenerator{
         r = Integer.parseInt(scInput.nextLine());
         System.out.println("Entered r value is " + r);
         
+        String path = "cd('/Users/karthikchandrasekar/Documents/MATLAB')";
+        String inputPath;
+        System.out.println("Enter matlab source code directory");
+        if(scInput.hasNextLine())
+        {
+            inputPath = scInput.nextLine();
+            if (!inputPath.isEmpty())
+            {
+                path = inputPath;
+            }
+        }
                 
         
          //Create a proxy, which we will use to control MATLAB
@@ -693,7 +715,6 @@ class BandsGenerator{
          MatlabProxy proxy = factory.getProxy();
          
          //set matlab path
-         String path = "cd('/Users/karthikchandrasekar/Documents/MATLAB')";
          proxy.eval(path);
          proxy.setVariable("r", r);
          proxy.eval("res=quantization(r)");
@@ -713,8 +734,7 @@ class BandsGenerator{
         bandsList.add(0.6500);
         bandsList.add(0.850);
         bandsList.add(1.00);
-        getBandRepList();
-        
+        getBandRepList();     
 
     }
     
