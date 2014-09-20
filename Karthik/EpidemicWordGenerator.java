@@ -225,7 +225,6 @@ class EpidemicDataHandler{
                         vectorList.add(Double.parseDouble(temp));
                     }
                     
-                    if (outputList.get(0).equals(enteredFile))
                     {
                         curStrength = getTwoNorm(vectorList);
                         if (curStrength > maxStrength)
@@ -250,6 +249,7 @@ class EpidemicDataHandler{
                                       
                     opListString += outputString + opListStringDelim;                    
                     startIndex = startIndex + shift;
+                    System.out.println(startIndex + " " + opListString);
                 }
                 else
                 {
@@ -389,12 +389,9 @@ class EpidemicDataHandler{
                     
                     if(neighborList.isEmpty())
                     {
-                        newEpidemicWordFileAvgList = new ArrayList<Double>();
 
-                        for(int i=3;i<tempList.size();i++)
-                        { 
-                            newEpidemicWordFileAvgList.add(Double.parseDouble(tempList.get(i)));                        
-                        }           
+                        newEpidemicWordFileAvgList = getEpidemicWordFileAvg(tempList, new ArrayList<Double>());
+            
                     }
                     else
                     {
@@ -478,7 +475,7 @@ class EpidemicDataHandler{
 
                         for(int i=3;i<tempList.size();i++)
                         { 
-                            newEpidemicWordFileDiffList.add(Double.parseDouble(tempList.get(i)));                        
+                            newEpidemicWordFileDiffList = getEpidemicWordFileDiff(tempList, new ArrayList<Double>());                        
                         }           
                     }
                     else
@@ -566,6 +563,14 @@ class EpidemicDataHandler{
         List<Double> finalList = new ArrayList<Double>();
         Double temp;
         
+        if(resultantList.isEmpty())
+        {
+            for(int i=3;i<origVecList.size();i++)
+            {
+                resultantList.add(0.0);
+            }
+        }
+        
         for(int i=3;i<origVecList.size();i++)
         {
             temp = (Double.parseDouble(origVecList.get(i)) - resultantList.get(i-3))/Double.parseDouble(origVecList.get(i)); 
@@ -647,6 +652,8 @@ class EpidemicDataHandler{
             
             for(File file : muObj.getFilesInDir(dirPath, logger))
             {
+                if(!(file.getName().equals(enteredFile)))
+                {continue;}
                 //Task 1 - a
                 valuesList = muObj.readCsv(file, logger);
                 maxValue = findMax(valuesList);
@@ -730,11 +737,16 @@ class BandsGenerator{
         */
         
         
-        bandsList.add(0.000);
-        bandsList.add(0.6500);
-        bandsList.add(0.850);
-        bandsList.add(1.00);
-        getBandRepList();     
+        bandsList.add(0.0000);
+        bandsList.add(0.5763);
+        bandsList.add(0.8904);
+        bandsList.add(0.9836);
+        bandsList.add(0.9986);
+        bandsList.add(1.0);
+
+        
+        getBandRepList();    
+        System.out.println("band rep list" + bandRepList);
 
     }
     
