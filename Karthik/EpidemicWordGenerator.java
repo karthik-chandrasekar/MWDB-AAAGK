@@ -1,4 +1,4 @@
-import java.io.*;
+ import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.FileHandler;
@@ -249,7 +249,6 @@ class EpidemicDataHandler{
                                       
                     opListString += outputString + opListStringDelim;                    
                     startIndex = startIndex + shift;
-                    System.out.println(startIndex + " " + opListString);
                 }
                 else
                 {
@@ -718,7 +717,7 @@ class BandsGenerator{
                 
         
          //Create a proxy, which we will use to control MATLAB
-         /***MatlabProxyFactory factory = new MatlabProxyFactory();
+         MatlabProxyFactory factory = new MatlabProxyFactory();
          MatlabProxy proxy = factory.getProxy();
          
          //set matlab path
@@ -727,23 +726,23 @@ class BandsGenerator{
          proxy.eval("res=quantization(r)");
          double[] bands = (double[]) proxy.getVariable("res");
          proxy.disconnect();
-        logger.info("Inside band generator");
- 
-        for(int i=0;i<bands.length;i++)
+         logger.info("Inside band generator");
+         double temp=0.0;
+        
+        bandsList.add(temp);
+        for(int i=0;i< bands.length;i++)
         {
-            bandsList.add(bands[i]);
+            temp += bands[i];
+            bandsList.add(temp);
         }
     
-        */
-        
-        
-        bandsList.add(0.0000);
+        /**bandsList.add(0.0000);
         bandsList.add(0.5763);
         bandsList.add(0.8904);
         bandsList.add(0.9836);
         bandsList.add(0.9986);
         bandsList.add(1.0);
-
+        **/
         
         getBandRepList();    
         System.out.println("band rep list" + bandRepList);
