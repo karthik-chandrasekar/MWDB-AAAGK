@@ -320,7 +320,7 @@ class EpidemicDataHandler{
     }
       
     
-    void generateEpidemicAvgDiffFile(HashMap<String, String> epidemicWordFileHash, List<String> epidemicFileValuesList, HashMap<String, List<String>> adjacencyHashMap, String enteredFile) throws Exception
+    void generateEpidemicAvgDiffFile(HashMap<String, String> epidemicWordFileHash, List<String> epidemicFileValuesList, HashMap<String, List<String>> adjacencyHashMap, String enteredFile, String outputDir) throws Exception
     {
         
         List<String> tempList;
@@ -336,7 +336,6 @@ class EpidemicDataHandler{
         String avgString;
         List<String> neighborList;
         
-        String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
         PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"EpidemicWordFileAvg", "UTF-8");
         
         PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF-8");
@@ -569,12 +568,12 @@ class EpidemicDataHandler{
         HashMap<String, String> epidemicWordFileHash = new HashMap<String, String>();
         List<String> epidemicFileValuesList = new ArrayList<String>();
         int window,shift;
+        String outputDirPath = "";
         
         try
         {                       
         
             String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
-            PrintWriter writer = new PrintWriter(outputDir+"EpidemicWordFile", "UTF-8");
             Scanner scInput = new Scanner(System.in);
             
             System.out.println("Enter input directory");
@@ -586,6 +585,21 @@ class EpidemicDataHandler{
                     dirPath = inputDirPath;
                 }
             }
+            System.out.println("Entered input directory" + dirPath);
+            
+            System.out.println("Enter output directory");
+            if(scInput.hasNextLine())
+            {
+                outputDirPath = scInput.nextLine();
+                if (!outputDirPath.isEmpty())
+                {
+                    outputDir = outputDirPath;
+                }
+            }
+            PrintWriter writer = new PrintWriter(outputDir+"EpidemicWordFile", "UTF-8");
+
+            
+            System.out.println("Entered output directory" + outputDir );
             
             System.out.println("Enter window length");
             window = Integer.parseInt(scInput.nextLine());
@@ -635,16 +649,10 @@ class EpidemicDataHandler{
                      
             HashMap<String, List<String>> adjacencyHashMap;        
             adjacencyHashMap = formAdjacencyHashMap();
-            generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap, enteredFile);
+            generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap, enteredFile, outputDir);
             logger.info("End of task 2");        
             
-            
-            //Task 3
-           
-            
-            
-            
-            
+         
             
         }
         catch(Exception e)
@@ -670,7 +678,7 @@ class BandsGenerator{
                 
         
          //Create a proxy, which we will use to control MATLAB
-         MatlabProxyFactory factory = new MatlabProxyFactory();
+         /***MatlabProxyFactory factory = new MatlabProxyFactory();
          MatlabProxy proxy = factory.getProxy();
          
          //set matlab path
@@ -680,7 +688,6 @@ class BandsGenerator{
          proxy.eval("res=quantization(r)");
          double[] bands = (double[]) proxy.getVariable("res");
          proxy.disconnect();
-        
         logger.info("Inside band generator");
  
         for(int i=0;i<bands.length;i++)
@@ -688,9 +695,16 @@ class BandsGenerator{
             bandsList.add(bands[i]);
         }
     
-        System.out.println("Bands List " + bandsList);
+        */
         
+        
+        bandsList.add(0.000);
+        bandsList.add(0.6500);
+        bandsList.add(0.850);
+        bandsList.add(1.00);
         getBandRepList();
+        
+
     }
     
     void getBandRepList()
