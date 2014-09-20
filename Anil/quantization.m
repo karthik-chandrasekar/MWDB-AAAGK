@@ -1,3 +1,4 @@
+function  [band_lengths] = quantization(r)
 i = 1;
 denom = integral(@(y)normpdf(y,0,0.25),0,1);
 band_lengths = zeros(1,r);
