@@ -9,6 +9,7 @@ class MyUtil{
     
     public File[] getFilesInDir(String path, Logger logger) throws Exception
     {
+        //Return list of files present in a given directory path
         File dirObj = new File(path);
         File[] inputFiles = dirObj.listFiles();
         return inputFiles;
@@ -16,6 +17,7 @@ class MyUtil{
     
      public List<List<String>> readCsv(File inputFile, Logger logger) throws Exception
         {
+            //Return list of lines of input csv file     
             List<String> headerList = new ArrayList<String>();
             List<List<String>> valuesList = new ArrayList(new ArrayList<String>());
             Scanner scannerObj = new Scanner(inputFile);
@@ -35,6 +37,8 @@ class MyUtil{
      
      public HashMap<String, List<String>> formHeaderValueHash(List<List<String>> valuesList)
      {
+         
+         // Form a hash with column header as key and column list of column values as values. 
          HashMap<String, List<String>> headerValueColumnMap = new HashMap<String, List<String>>();
          List<String> headerList = new ArrayList<String>();
          int valueCount;
@@ -74,9 +78,10 @@ class EpidemicDataHandler{
     List<String> bandRepList;
     Double Alpha;
     
-    public void dumpInFile(List<List<String>> valuesList, String outputFileName) throws Exception
+    public void dumpInFile(List<List<String>> valuesList, String outputFileName, String outputDir) throws Exception
     {
-        String outputDir = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
+        //Dump normalized input files
+        
         PrintWriter writer = new PrintWriter(outputDir+outputFileName+"_Normalized", "UTF-8");
         String outputString = "";
    
@@ -98,6 +103,7 @@ class EpidemicDataHandler{
     
     public double findMax(List<List<String>> valuesList)
     {
+        //Find the max value in a file to normalize the file data. 
         Double maxValue = 0.0;
         int valueCount;
         int loopCount = 0; 
@@ -125,7 +131,7 @@ class EpidemicDataHandler{
     
     public List<List<String>> normalizeData(List<List<String>> valuesList, double maxValue) throws Exception
     {
-     
+        //Normalize the input file data with the max value given
         int valueCount;
         int loopCount = 0; 
         
@@ -164,7 +170,7 @@ class EpidemicDataHandler{
     
     void generateEpidemicWordFile(HashMap<String, List<String>> headerValueColumnMap, String fileName, List<String> headerList, PrintWriter writer, Logger logger, HashMap<String, String> epidemicWordFileHash, List<String> epidemicWordFileValuesList, int window, int shift, String enteredFile)
     {
-        
+        //Generate the epidemic word file
         List<String> valueList = null;
         List<String> timeList;
         List<String> outputList;
@@ -179,8 +185,8 @@ class EpidemicDataHandler{
         
         logger.info(fileName);
         
-        List<Double> maxEpidemicWordFileVector = null;
-        List<Double> minEpidemicWordFileVector = null;
+        List<String> maxEpidemicWordFileVector = null;
+        List<String> minEpidemicWordFileVector = null;
         Double maxStrength = 0.0;
         Double curStrength = 0.0;
         Double minStrength = 10000.0;
@@ -224,12 +230,12 @@ class EpidemicDataHandler{
                         curStrength = getTwoNorm(vectorList);
                         if (curStrength > maxStrength)
                         {
-                            maxEpidemicWordFileVector = vectorList;
+                            maxEpidemicWordFileVector = outputList;
                             maxStrength = curStrength;
                         }
                         else if(curStrength < minStrength)
                         {
-                            minEpidemicWordFileVector = vectorList;
+                            minEpidemicWordFileVector = outputList;
                             minStrength = curStrength;
                         }
                     }
@@ -265,6 +271,7 @@ class EpidemicDataHandler{
     
     String getBandRep(String value)
     {
+        //For a given value, return the representation point of the range in which the input value belongs. 
         Double inputValue = Double.valueOf(value);
         String bandRep = "";
         
@@ -323,6 +330,7 @@ class EpidemicDataHandler{
     void generateEpidemicAvgDiffFile(HashMap<String, String> epidemicWordFileHash, List<String> epidemicFileValuesList, HashMap<String, List<String>> adjacencyHashMap, String enteredFile, String outputDir) throws Exception
     {
         
+        //Generate epidemic avg file and epidemic diff file
         List<String> tempList;
         String hashOutputListString;
         String key;
@@ -340,14 +348,14 @@ class EpidemicDataHandler{
         
         PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF-8");
         
-        List<Double> maxEpidemicWordFileAvgVector = null;
-        List<Double> minEpidemicWordFileAvgVector = null;
+        List<String> maxEpidemicWordFileAvgVector = null;
+        List<String> minEpidemicWordFileAvgVector = null;
         Double maxStrengthAvg = 0.0;
         Double curStrengthAvg = 0.0;
         Double minStrengthAvg = 10000.0;
         
-        List<Double> maxEpidemicWordFileDiffVector = null;
-        List<Double> minEpidemicWordFileDiffVector = null;
+        List<String> maxEpidemicWordFileDiffVector = null;
+        List<String> minEpidemicWordFileDiffVector = null;
         Double maxStrengthDiff = 0.0;
         Double curStrengthDiff = 0.0;
         Double minStrengthDiff = 10000.0;
@@ -430,12 +438,12 @@ class EpidemicDataHandler{
                         curStrengthAvg = getTwoNorm(newEpidemicWordFileAvgList);
                         if (curStrengthAvg > maxStrengthAvg)
                         {
-                            maxEpidemicWordFileAvgVector = newEpidemicWordFileAvgList;
+                            maxEpidemicWordFileAvgVector = tempList;
                             maxStrengthAvg = curStrengthAvg;
                         }
                         else if(curStrengthAvg < minStrengthAvg)
                         {
-                            minEpidemicWordFileAvgVector = newEpidemicWordFileAvgList;
+                            minEpidemicWordFileAvgVector = tempList;
                             minStrengthAvg = curStrengthAvg;
                         }
                     }
@@ -472,12 +480,12 @@ class EpidemicDataHandler{
                         curStrengthDiff = getTwoNorm(newEpidemicWordFileDiffList);
                         if (curStrengthDiff > maxStrengthDiff)
                         {
-                            maxEpidemicWordFileDiffVector = newEpidemicWordFileDiffList;
+                            maxEpidemicWordFileDiffVector = tempList;
                             maxStrengthDiff = curStrengthDiff;
                         }
                         else if(curStrengthDiff < minStrengthDiff)
                         {
-                            minEpidemicWordFileDiffVector = newEpidemicWordFileDiffList;
+                            minEpidemicWordFileDiffVector = tempList;
                             minStrengthDiff = curStrengthDiff;
                         }
                     }
@@ -512,6 +520,7 @@ class EpidemicDataHandler{
    
     Double getTwoNorm(List<Double> inputVector)
     {
+        //Return the two norm of the input vector
         Double sum=0.0;
         for(Double value : inputVector)
         {
@@ -522,6 +531,7 @@ class EpidemicDataHandler{
     
     List<Double> getEpidemicWordFileAvg(List<String> origVecList, List<Double> resultantList)
     {
+        //Perform epidemic word file average computation operation
         List<Double> finalList = new ArrayList<Double>();
         Double temp;
         
@@ -541,6 +551,7 @@ class EpidemicDataHandler{
     
     List<Double>  getEpidemicWordFileDiff(List<String> origVecList, List<Double> resultantList)
     {
+        //Perform epidemic word file diff computation operation
         List<Double> finalList = new ArrayList<Double>();
         Double temp;
         
@@ -629,7 +640,7 @@ class EpidemicDataHandler{
                 valuesList = muObj.readCsv(file, logger);
                 maxValue = findMax(valuesList);
                 valuesList = normalizeData(valuesList, maxValue);
-                dumpInFile(valuesList, file.getName());
+                dumpInFile(valuesList, file.getName(), outputDir);
                           
                
                 //Task 1 - c
@@ -709,6 +720,7 @@ class BandsGenerator{
     
     void getBandRepList()
     {
+        //Find the representation point for every band
         bandRepList = new ArrayList<String>();
         String output;
         
