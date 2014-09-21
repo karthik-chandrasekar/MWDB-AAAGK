@@ -38,7 +38,7 @@ class MyUtil{
      public HashMap<String, List<String>> formHeaderValueHash(List<List<String>> valuesList)
      {
          
-         // Form a hash with column header as key and column list of column values as values. 
+         // Form a hash with column header as key and column as values. 
          HashMap<String, List<String>> headerValueColumnMap = new HashMap<String, List<String>>();
          List<String> headerList = new ArrayList<String>();
          int valueCount;
@@ -357,7 +357,7 @@ class EpidemicDataHandler{
     void generateEpidemicAvgDiffFile(HashMap<String, String> epidemicWordFileHash, List<String> epidemicFileValuesList, HashMap<String, List<String>> adjacencyHashMap, String enteredFile, String outputDir) throws Exception
     {
         
-        //Generate epidemic avg file and epidemic diff file
+        //Generate EpidemicWordFileAvg and EpidemicWordFileDiff
         List<String> tempList;
         String hashOutputListString;
         String key;
@@ -701,6 +701,7 @@ class EpidemicDataHandler{
                 if(!(file.getName().equals(enteredFile)))
                 {continue;}
                 //Task 1 - a
+                //Normalize the input set of files
                 valuesList = muObj.readCsv(file, logger);
                 maxValue = findMax(valuesList);
                 valuesList = normalizeData(valuesList, maxValue);
@@ -708,6 +709,7 @@ class EpidemicDataHandler{
                           
                
                 //Task 1 - c
+                //Generate EpidemicWordFile
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
                 generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger, epidemicWordFileHash, epidemicFileValuesList, window, shift, enteredFile);
@@ -716,12 +718,11 @@ class EpidemicDataHandler{
                 headerValueColumnMap = null;
             }
             logger.info("End of task 1"); 
-
             
             writer.close();
             
             //Task 2
-                     
+            // Generate EpidemicWordFileAvg,EpidemicWordFileDiff         
             HashMap<String, List<String>> adjacencyHashMap;        
             adjacencyHashMap = formAdjacencyHashMap();
             generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap, enteredFile, outputDir);
@@ -730,6 +731,7 @@ class EpidemicDataHandler{
             
             
             //Task 3
+            //Generate values for heat map and call mat lab function for given file
             String heatMapFileName = "/tmp/MWDBInput/Sample1.csv";
             
             String heatMapFile;
