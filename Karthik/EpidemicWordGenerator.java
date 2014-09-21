@@ -79,6 +79,16 @@ class EpidemicDataHandler{
     Double Alpha;
     String maxState;
     String minState;
+    int maxTimeIteration;
+    int minTimeIteration;
+    HashMap<String,Integer> timeStringIterationMap = new HashMap<String,Integer>();
+    List<String> stateList;
+    List<String> maxEpidemicWordFileVector;
+    List<String> minEpidemicWordFileVector;
+    List<String> maxEpidemicWordFileDiffVector;
+    List<String> minEpidemicWordFileDiffVector;
+    List<String> maxEpidemicWordFileAvgVector;
+    List<String> minEpidemicWordFileAvgVector;
     
     public void dumpInFile(List<List<String>> valuesList, String outputFileName, String outputDir) throws Exception
     {
@@ -187,13 +197,13 @@ class EpidemicDataHandler{
         
         logger.info(fileName);
         
-        List<String> maxEpidemicWordFileVector = null;
-        List<String> minEpidemicWordFileVector = null;
+        
         Double maxStrength = 0.0;
         Double curStrength = 0.0;
         Double minStrength = 10000.0;
-       
+        int timeIterationCount;
         
+        stateList = new ArrayList<String>();
         for(String header: headerList)      
         {
             
@@ -201,6 +211,8 @@ class EpidemicDataHandler{
             {
                 continue;
             }
+            stateList.add(header);
+            timeIterationCount = 1;
             
             valueList = headerValueColumnMap.get(header);       
             valueSize = valueList.size();
@@ -218,7 +230,10 @@ class EpidemicDataHandler{
                 outputString = "";
                 if (startIndex+window < valueSize)
                 {
-                    outputList.add(timeList.get(startIndex));
+                    //outputList.add(timeList.get(startIndex));
+                    timeStringIterationMap.put(timeList.get(startIndex), timeIterationCount);
+                    outputList.add(String.valueOf(timeIterationCount));
+                    timeIterationCount++;
                     vectorList = new ArrayList<Double>();
                     for(int j=startIndex; j<startIndex+window;j++)
                     {
@@ -360,14 +375,12 @@ class EpidemicDataHandler{
         
         PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF-8");
         
-        List<String> maxEpidemicWordFileAvgVector = null;
-        List<String> minEpidemicWordFileAvgVector = null;
+       
         Double maxStrengthAvg = 0.0;
         Double curStrengthAvg = 0.0;
         Double minStrengthAvg = 10000.0;
         
-        List<String> maxEpidemicWordFileDiffVector = null;
-        List<String> minEpidemicWordFileDiffVector = null;
+       
         Double maxStrengthDiff = 0.0;
         Double curStrengthDiff = 0.0;
         Double minStrengthDiff = 10000.0;
@@ -714,55 +727,90 @@ class EpidemicDataHandler{
             generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap, enteredFile, outputDir);
             logger.info("End of task 2");        
             
+            
+            
             //Task 3
             String heatMapFileName = "/tmp/MWDBInput/Sample1.csv";
+            
+            String heatMapFile;
+            System.out.println("Enter a file name for heatmap");
+            heatMapFile = scInput.nextLine();
+            System.out.println("Entered file name is " + heatMapFile);
+            
+            if(heatMapFile.equals("epidemic_word_file"))
+            {
+                maxState = maxEpidemicWordFileVector.get(1);
+                minState = minEpidemicWordFileVector.get(1);
+                maxTimeIteration = Integer.valueOf(maxEpidemicWordFileVector.get(2));
+                minTimeIteration = Integer.valueOf(minEpidemicWordFileVector.get(2));
+            }
+            else if(heatMapFile.equals("epidemic_word_file_avg"))
+            {
+                System.out.println(maxEpidemicWordFileAvgVector);
+                System.out.println(minEpidemicWordFileAvgVector);
+                
+                maxState = maxEpidemicWordFileAvgVector.get(1);
+                minState = minEpidemicWordFileAvgVector.get(1);
+                maxTimeIteration = Integer.valueOf(maxEpidemicWordFileAvgVector.get(2));
+                minTimeIteration = Integer.valueOf(minEpidemicWordFileAvgVector.get(2));
+            }
+            else if(heatMapFile.equals("epidemic_word_file_diff"))
+            {
+                maxState = maxEpidemicWordFileDiffVector.get(1);
+                minState = minEpidemicWordFileDiffVector.get(1);
+                maxTimeIteration = Integer.valueOf(maxEpidemicWordFileDiffVector.get(2));
+                minTimeIteration = Integer.valueOf(minEpidemicWordFileDiffVector.get(2));
+            }
+            
+            
+            
             
             ArrayList<Integer> heatMapMaxState = new ArrayList<Integer>();
             ArrayList<Integer> heatMapMinState = new ArrayList<Integer>();
             
-            heatMapMaxState.add(1);
-            heatMapMaxState.add(3);
-            heatMapMaxState.add(45);
+            heatMapMaxState.add(stateList.indexOf(maxState));
+            heatMapMaxState.add(maxTimeIteration);
+            heatMapMaxState.add(window);
             
             int count = 1;
-            for(int i=0;i<5;i++)
+            System.out.println("Maxstate " + maxState);
+            System.out.println("Minstate " + minState);
+            System.out.println("MaxTimeIteration" + maxTimeIteration);
+            System.out.println("MinTimeIteration" + minTimeIteration);
+            
+            for(String neighbor: adjacencyHashMap.get(maxState))
             {
-                heatMapMaxState.add(count);
+                heatMapMaxState.add(stateList.indexOf(neighbor));
                 count ++;
             }
             
             
-            heatMapMinState.add(2);
-            heatMapMinState.add(4);
-            heatMapMinState.add(48);
+            heatMapMinState.add(stateList.indexOf(minState));
+            heatMapMinState.add(minTimeIteration);
+            heatMapMinState.add(window);
             count = 1;
-            for(int j=0;j<5;j++)
+            for(String neighbor : adjacencyHashMap.get(minState))
             {
-                heatMapMinState.add(count);
+                heatMapMinState.add(stateList.indexOf(neighbor));
                 count ++;
             }
 
             
-            int[] heatMapMax = new int[5];
+            int[] heatMapMax = new int[heatMapMaxState.size()];
+            for(int i=0;i<heatMapMaxState.size();i++)
+            {
+                heatMapMax[i] = heatMapMaxState.get(i);
+            }
+           
             
-            heatMapMax[0] = 1;
-            heatMapMax[1] = 3;
-            heatMapMax[2] = 45;
-            heatMapMax[3] = 7;
-            heatMapMax[4] = 8;
-            
-            int[] heatMapMin = new int[5];
-
-            heatMapMin[0] = 8;
-            heatMapMin[1] = 5;
-            heatMapMin[2] = 24;
-            heatMapMin[3] = 4;
-            heatMapMin[4] = 34;
+            int[] heatMapMin = new int[heatMapMinState.size()];
+            for(int j=0; j<heatMapMinState.size(); j++)
+            {
+                heatMapMin[j] = heatMapMinState.get(j);
+            }
             
             
-            formHeatMap(heatMapMax, heatMapMin, heatMapFileName);
-            
-            
+            formHeatMap(heatMapMax, heatMapMin, heatMapFileName);            
         }
         catch(Exception e)
         {
