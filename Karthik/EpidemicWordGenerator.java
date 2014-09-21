@@ -1,4 +1,4 @@
- import java.io.*;
+import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.FileHandler;
@@ -77,6 +77,8 @@ class EpidemicDataHandler{
     List<Double> bandsList;
     List<String> bandRepList;
     Double Alpha;
+    String maxState;
+    String minState;
     
     public void dumpInFile(List<List<String>> valuesList, String outputFileName, String outputDir) throws Exception
     {
@@ -579,6 +581,38 @@ class EpidemicDataHandler{
     }
     
     
+    void formHeatMap(int [] heatMapMaxState, int [] heatMapMinState, String heatMapFileName) throws Exception
+    {
+        Scanner scInput = new Scanner(System.in);
+        
+        String path = "cd('/Users/karthikchandrasekar/Documents/MATLAB')";
+        String inputPath;
+        System.out.println("Enter matlab source code directory");
+        if(scInput.hasNextLine())
+        {
+            inputPath = scInput.nextLine();
+            if (!inputPath.isEmpty())
+            {
+                path = inputPath;
+            }
+        }
+        
+      //Create a proxy, which we will use to control MATLAB
+        MatlabProxyFactory factory = new MatlabProxyFactory();
+        MatlabProxy proxy = factory.getProxy();
+        
+        //set matlab path
+        proxy.eval(path);
+        proxy.setVariable("max_elements", heatMapMaxState);
+        proxy.setVariable("min_elements", heatMapMinState);
+        System.out.println(heatMapFileName);
+        proxy.setVariable("f_name", heatMapFileName);
+
+       
+        proxy.eval("plot_graph(f_name, max_elements, min_elements)");
+        proxy.disconnect();
+        
+    }
     
     public void main(Logger logger)
     {
@@ -680,7 +714,54 @@ class EpidemicDataHandler{
             generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap, enteredFile, outputDir);
             logger.info("End of task 2");        
             
-         
+            //Task 3
+            String heatMapFileName = "/tmp/MWDBInput/Sample1.csv";
+            
+            ArrayList<Integer> heatMapMaxState = new ArrayList<Integer>();
+            ArrayList<Integer> heatMapMinState = new ArrayList<Integer>();
+            
+            heatMapMaxState.add(1);
+            heatMapMaxState.add(3);
+            heatMapMaxState.add(45);
+            
+            int count = 1;
+            for(int i=0;i<5;i++)
+            {
+                heatMapMaxState.add(count);
+                count ++;
+            }
+            
+            
+            heatMapMinState.add(2);
+            heatMapMinState.add(4);
+            heatMapMinState.add(48);
+            count = 1;
+            for(int j=0;j<5;j++)
+            {
+                heatMapMinState.add(count);
+                count ++;
+            }
+
+            
+            int[] heatMapMax = new int[5];
+            
+            heatMapMax[0] = 1;
+            heatMapMax[1] = 3;
+            heatMapMax[2] = 45;
+            heatMapMax[3] = 7;
+            heatMapMax[4] = 8;
+            
+            int[] heatMapMin = new int[5];
+
+            heatMapMin[0] = 8;
+            heatMapMin[1] = 5;
+            heatMapMin[2] = 24;
+            heatMapMin[3] = 4;
+            heatMapMin[4] = 34;
+            
+            
+            formHeatMap(heatMapMax, heatMapMin, heatMapFileName);
+            
             
         }
         catch(Exception e)
