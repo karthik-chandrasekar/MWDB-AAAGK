@@ -233,7 +233,7 @@ class EpidemicDataHandler{
                     //outputList.add(timeList.get(startIndex));
                     timeStringIterationMap.put(timeList.get(startIndex), timeIterationCount);
                     outputList.add(String.valueOf(timeIterationCount));
-                    timeIterationCount++;
+                    timeIterationCount = timeIterationCount + shift;
                     vectorList = new ArrayList<Double>();
                     for(int j=startIndex; j<startIndex+window;j++)
                     {
@@ -303,7 +303,7 @@ class EpidemicDataHandler{
     }
     
     
-    public HashMap<String, List<String>> formAdjacencyHashMap() throws Exception
+    public HashMap<String, List<String>> formAdjacencyHashMap(String inputFilePath) throws Exception
     {
         
         //Parse adjacency matrix and form a state, adjacent states hash map
@@ -313,19 +313,7 @@ class EpidemicDataHandler{
         List<String> valueList;
         int count;
         String header="";
-        String inputLocationFile;
-        String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
         
-        System.out.println("Enter location matrix input file location");
-        Scanner sysInput = new Scanner(System.in);
-        if(sysInput.hasNextLine())
-        {
-            inputLocationFile = sysInput.nextLine();
-            if (!inputLocationFile.isEmpty())
-            {
-                inputFilePath = inputLocationFile;
-            }
-        }
         
         Scanner scannerObj = new Scanner(new File(inputFilePath));
         
@@ -371,9 +359,9 @@ class EpidemicDataHandler{
         String avgString;
         List<String> neighborList;
         
-        PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"EpidemicWordFileAvg", "UTF-8");
+        PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"epidemic_word_file_avg", "UTF-8");
         
-        PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF-8");
+        PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"epidemic_word_file_diff", "UTF-8");
         
        
         Double maxStrengthAvg = 0.0;
@@ -594,7 +582,7 @@ class EpidemicDataHandler{
     }
     
     
-    void formHeatMap(int [] heatMapMaxState, int [] heatMapMinState, String heatMapFileName) throws Exception
+    void formHeatMap(int [] heatMapMaxState, int [] heatMapMinState, String heatMapFileName, String locationFileName) throws Exception
     {
         Scanner scInput = new Scanner(System.in);
         
@@ -620,9 +608,10 @@ class EpidemicDataHandler{
         proxy.setVariable("min_elements", heatMapMinState);
         System.out.println(heatMapFileName);
         proxy.setVariable("f_name", heatMapFileName);
+        proxy.setVariable("location_fname", locationFileName);
 
        
-        proxy.eval("plot_graph(f_name, max_elements, min_elements)");
+        proxy.eval("plot_graph(f_name, location_fname, max_elements, min_elements)");
         proxy.disconnect();
         
     }
@@ -632,6 +621,8 @@ class EpidemicDataHandler{
         
         String dirPath = "/Users/karthikchandrasekar/Downloads/sampledata_P1_F14/Epidemic Simulation Datasets";
         //String dirPath = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
+        String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
+
         String inputDirPath = "";
         MyUtil muObj = new MyUtil();
         Double maxValue = 0.0;
@@ -669,7 +660,7 @@ class EpidemicDataHandler{
                     outputDir = outputDirPath;
                 }
             }
-            PrintWriter writer = new PrintWriter(outputDir+"EpidemicWordFile", "UTF-8");
+            PrintWriter writer = new PrintWriter(outputDir+"epidemic_word_file", "UTF-8");
 
             
             System.out.println("Entered output directory" + outputDir );
@@ -682,6 +673,20 @@ class EpidemicDataHandler{
             
             System.out.println("Enter alpha value");
             Alpha = Double.parseDouble(scInput.nextLine());
+            
+            
+            String inputLocationFile;
+            
+            System.out.println("Enter location matrix input file location");
+            Scanner sysInput = new Scanner(System.in);
+            if(sysInput.hasNextLine())
+            {
+                inputLocationFile = sysInput.nextLine();
+                if (!inputLocationFile.isEmpty())
+                {
+                    inputFilePath = inputLocationFile;
+                }
+            }
             
             //Bands Generator
             logger.info("Bands generator");
@@ -724,7 +729,7 @@ class EpidemicDataHandler{
             //Task 2
             // Generate EpidemicWordFileAvg,EpidemicWordFileDiff         
             HashMap<String, List<String>> adjacencyHashMap;        
-            adjacencyHashMap = formAdjacencyHashMap();
+            adjacencyHashMap = formAdjacencyHashMap(inputFilePath);
             generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap, enteredFile, outputDir);
             logger.info("End of task 2");        
             
@@ -811,8 +816,12 @@ class EpidemicDataHandler{
                 heatMapMin[j] = heatMapMinState.get(j);
             }
             
-            
-            formHeatMap(heatMapMax, heatMapMin, heatMapFileName);            
+            System.out.println("StateList " + stateList);
+            System.out.println("HeatMapMax " + heatMapMaxState);
+            System.out.println("HeatMapMin " + heatMapMinState);
+            System.out.println("Location file name" + inputFilePath);
+            formHeatMap(heatMapMax, heatMapMin, heatMapFileName, inputFilePath); 
+          
         }
         catch(Exception e)
         {
