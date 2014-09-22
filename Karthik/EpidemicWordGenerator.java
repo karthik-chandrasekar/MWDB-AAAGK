@@ -290,12 +290,23 @@ class EpidemicDataHandler{
         //For a given value, return the representation point of the range in which the input value belongs. 
         Double inputValue = Double.valueOf(value);
         String bandRep = "";
+        int maxIndex = bandsList.size()-1;
         
         for(int i=0;i< bandsList.size();i++)
         {
             if( inputValue >= bandsList.get(i) && inputValue <= bandsList.get(i+1))
             {
                 bandRep = bandRepList.get(i);
+                break;
+            }
+            else if (inputValue <= bandsList.get(0))
+            {
+                bandRep = bandRepList.get(0);
+                break;
+            }
+            else if(inputValue >= bandsList.get(maxIndex))
+            {
+                bandRep = bandRepList.get(bandRepList.size()-1);
                 break;
             }
         }
@@ -604,14 +615,13 @@ class EpidemicDataHandler{
         
         //set matlab path
         proxy.eval(path);
-        proxy.setVariable("max_elements", heatMapMaxState);
-        proxy.setVariable("min_elements", heatMapMinState);
-        System.out.println(heatMapFileName);
-        proxy.setVariable("f_name", heatMapFileName);
-        proxy.setVariable("location_fname", locationFileName);
+        proxy.setVariable("max_strength_vector_entries", heatMapMaxState);
+        proxy.setVariable("min_strength_vector_entries", heatMapMinState);
+        proxy.setVariable("input_data_file", heatMapFileName);
+        proxy.setVariable("connectivity_graph_file", locationFileName);
 
        
-        proxy.eval("plot_graph(f_name, location_fname, max_elements, min_elements)");
+        proxy.eval("GenerateHeatMap(input_data_file, connectivity_graph_file, max_strength_vector_entries, min_strength_vector_entries)");
         proxy.disconnect();
         
     }
@@ -862,10 +872,11 @@ class BandsGenerator{
          
          //set matlab path
          proxy.eval(path);
-         proxy.setVariable("r", r);
-         proxy.eval("res=quantization(r)");
-         double[] bands = (double[]) proxy.getVariable("res");
+         proxy.setVariable("total_bands", r);
+         proxy.eval("bandsLength=GenerateBands(r)");
+         double[] bands = (double[]) proxy.getVariable("bandsLength");
          proxy.disconnect();
+         
          logger.info("Inside band generator");
          double temp=0.0;
         
