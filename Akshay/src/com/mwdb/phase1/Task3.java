@@ -7,13 +7,28 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import matlabcontrol.MatlabConnectionException;
+import matlabcontrol.MatlabInvocationException;
+import matlabcontrol.MatlabProxy;
+import matlabcontrol.MatlabProxyFactory;
 
 public class Task3 {
 
-	public static void main(String[] args) {
-		File EWfile = new File("epidemic_word_file_diff.txt");
+	public static void execute(String InputFile,int fileIndex,int w) {
+		File EWfile =null;
+		if(fileIndex==1)
+			EWfile = new File("epidemic_word_file.txt");
+		else if(fileIndex==2)
+			EWfile = new File("epidemic_word_file_avg.txt");
+		else if(fileIndex==3)
+			EWfile = new File("epidemic_word_file_diff.txt");
+		
+		
 		File graph = new File("LocationMatrix.csv");
-        String InputFile="Sample1.csv";
+       // String InputFile="Sample1.csv";
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader(graph));
@@ -22,6 +37,7 @@ public class Task3 {
 	    int count=0;
 	    String[] states = null;
 	    HashMap<String, String> pmatrix= new HashMap<String, String>();
+	    HashMap<String, String> stateIndex= new HashMap<String, String>();
 	    ArrayList<String> prox = new ArrayList<String>();
 	    while ((line = br.readLine()) != null) { 
                 count++;
@@ -35,7 +51,7 @@ public class Task3 {
                 	 if(Integer.parseInt(temp[i])==1)
                 		 prox.add(states[i]);
                  }
-                 
+                 stateIndex.put(temp[0],Integer.toString(count-1));
                  pmatrix.put(temp[0],ArrayListToString(prox));
                  prox.clear();
          
@@ -74,12 +90,12 @@ public class Task3 {
 			 win=vals.get(i).split(",");
 			 temp = getCurrentRow(win);
 			 val = computeStrenth(temp);
-			 if(Math.max(max, val)==val){
+			 if(Math.max(max, val)>max){//considering last max
 				 max = val;
 				 maxState = win[0];
 				 maxTime = win[1];
 			 }
-			 if(Math.min(min, val)==val){ //considering last min
+			 if(Math.min(min, val)<min){ //considering last min
 				 min = val;
 				 minState = win[0];
 				 minTime = win[1];
@@ -88,12 +104,39 @@ public class Task3 {
 			 temp.clear();
 			 
 		 }
-        
+		 
+         ArrayList<Integer> maxelements = new ArrayList<Integer>();
+         maxelements.add(Integer.parseInt(stateIndex.get(maxState)));
+         maxelements.add(Integer.parseInt(maxTime));
+         maxelements.add(w);
+		 
+         String[] s={}; 
+         if(pmatrix.get(maxState)!=null)
+         s= pmatrix.get(maxState).split(",");
+         for(int i=0;i<s.length;i++){
+        	 maxelements.add(Integer.parseInt(stateIndex.get(s[i])));
+         }
+         ArrayList<Integer> minelements = new ArrayList<Integer>();
+         minelements.add(Integer.parseInt(stateIndex.get(minState)));
+         minelements.add(Integer.parseInt(minTime));
+         minelements.add(w);
+		 
+         String[] s1={}; 
+         if(pmatrix.get(minState)!=null)
+         s1= pmatrix.get(minState).split(",");
+         
+         for(int i=0;i<s1.length;i++){
+        	 minelements.add(Integer.parseInt(stateIndex.get(s1[i])));
+         }
+         
+        //  plot(convertIntegers(maxelements),convertIntegers(minelements),InputFile);     
 		 System.out.println("Max State : "+ maxState);
 		 System.out.println("Min State : "+ minState);
+		 System.out.println("Max value Iteration : "+ maxTime);
+		 System.out.println("Min value Iteration : "+ minTime);
 		 System.out.println("Max value : "+ max);
 		 System.out.println("Min value : "+ min);
-		 
+		
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -103,6 +146,43 @@ public class Task3 {
 		}
 
 		
+	}
+	
+	private static void plot(int[] maxelements, int[] minelements, String InputFile) {
+		// TODO Auto-generated method stub
+		try {
+		MatlabProxyFactory factory = new MatlabProxyFactory();
+		MatlabProxy proxy = factory.getProxy();
+		//set matlab path
+		String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
+		
+			proxy.eval(path);
+		
+		//proxy.setVariable("r", );
+			proxy.setVariable("max_elements", maxelements);
+			proxy.setVariable("min_elements", minelements);
+			//System.out.println(heatMapFileName);
+			proxy.setVariable("f_name", InputFile);
+			proxy.eval("plot_graph(f_name, max_elements, min_elements)");
+			proxy.disconnect();
+			} catch (MatlabInvocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MatlabConnectionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static int[] convertIntegers(List<Integer> integers)
+	{
+	    int[] ret = new int[integers.size()];
+	    Iterator<Integer> iterator = integers.iterator();
+	    for (int i = 0; i < ret.length; i++)
+	    {
+	        ret[i] = iterator.next().intValue();
+	    }
+	    return ret;
 	}
 	
 	private static Double computeStrenth(ArrayList<Double> temp) {
@@ -142,4 +222,6 @@ public class Task3 {
 		}
 			return sb.toString();
     	}
+	
+	
 }

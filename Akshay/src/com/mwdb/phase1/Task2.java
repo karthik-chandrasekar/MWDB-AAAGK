@@ -13,8 +13,11 @@ import java.util.HashMap;
 
 public class Task2 {
 
-	public static void main(String[] args) {
-		double a = 0.345;
+	static boolean executed2 = false;
+	
+	public static void execute(double a) {
+		
+		if(!executed2){
 		File EWfile = new File("epidemic_word_file.txt");
 		File graph = new File("LocationMatrix.csv");
 		try {
@@ -62,8 +65,8 @@ public class Task2 {
 	           
 			 br.close();
 			 br = new BufferedReader(new FileReader(EWfile));
-			 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("epidemic_word_file_avg.txt", true)));
-			 PrintWriter outt = new PrintWriter(new BufferedWriter(new FileWriter("epidemic_word_file_diff.txt", true)));
+			 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("epidemic_word_file_avg.txt")));
+			 PrintWriter outt = new PrintWriter(new BufferedWriter(new FileWriter("epidemic_word_file_diff.txt")));
 			
 			 String[] vals;
 			 ArrayList<ArrayList<Double>> rows = new ArrayList<ArrayList<Double>>();
@@ -131,6 +134,8 @@ public class Task2 {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
+		executed2 = true;
+		}
 	}
 
 	private static ArrayList<Double> ComputeWinDiff(
