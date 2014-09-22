@@ -38,7 +38,7 @@ class MyUtil{
      public HashMap<String, List<String>> formHeaderValueHash(List<List<String>> valuesList)
      {
          
-         // Form a hash with column header as key and column list of column values as values. 
+         // Form a hash with column header as key and column as values. 
          HashMap<String, List<String>> headerValueColumnMap = new HashMap<String, List<String>>();
          List<String> headerList = new ArrayList<String>();
          int valueCount;
@@ -77,6 +77,18 @@ class EpidemicDataHandler{
     List<Double> bandsList;
     List<String> bandRepList;
     Double Alpha;
+    String maxState;
+    String minState;
+    int maxTimeIteration;
+    int minTimeIteration;
+    HashMap<String,Integer> timeStringIterationMap = new HashMap<String,Integer>();
+    List<String> stateList;
+    List<String> maxEpidemicWordFileVector;
+    List<String> minEpidemicWordFileVector;
+    List<String> maxEpidemicWordFileDiffVector;
+    List<String> minEpidemicWordFileDiffVector;
+    List<String> maxEpidemicWordFileAvgVector;
+    List<String> minEpidemicWordFileAvgVector;
     
     public void dumpInFile(List<List<String>> valuesList, String outputFileName, String outputDir) throws Exception
     {
@@ -185,13 +197,13 @@ class EpidemicDataHandler{
         
         logger.info(fileName);
         
-        List<String> maxEpidemicWordFileVector = null;
-        List<String> minEpidemicWordFileVector = null;
+        
         Double maxStrength = 0.0;
         Double curStrength = 0.0;
         Double minStrength = 10000.0;
-       
+        int timeIterationCount;
         
+        stateList = new ArrayList<String>();
         for(String header: headerList)      
         {
             
@@ -199,6 +211,8 @@ class EpidemicDataHandler{
             {
                 continue;
             }
+            stateList.add(header);
+            timeIterationCount = 1;
             
             valueList = headerValueColumnMap.get(header);       
             valueSize = valueList.size();
@@ -216,7 +230,10 @@ class EpidemicDataHandler{
                 outputString = "";
                 if (startIndex+window < valueSize)
                 {
-                    outputList.add(timeList.get(startIndex));
+                    //outputList.add(timeList.get(startIndex));
+                    timeStringIterationMap.put(timeList.get(startIndex), timeIterationCount);
+                    outputList.add(String.valueOf(timeIterationCount));
+                    timeIterationCount = timeIterationCount + shift;
                     vectorList = new ArrayList<Double>();
                     for(int j=startIndex; j<startIndex+window;j++)
                     {
@@ -249,7 +266,6 @@ class EpidemicDataHandler{
                                       
                     opListString += outputString + opListStringDelim;                    
                     startIndex = startIndex + shift;
-                    System.out.println(startIndex + " " + opListString);
                 }
                 else
                 {
@@ -287,7 +303,7 @@ class EpidemicDataHandler{
     }
     
     
-    public HashMap<String, List<String>> formAdjacencyHashMap() throws Exception
+    public HashMap<String, List<String>> formAdjacencyHashMap(String inputFilePath) throws Exception
     {
         
         //Parse adjacency matrix and form a state, adjacent states hash map
@@ -297,19 +313,7 @@ class EpidemicDataHandler{
         List<String> valueList;
         int count;
         String header="";
-        String inputLocationFile;
-        String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
         
-        System.out.println("Enter location matrix input file location");
-        Scanner sysInput = new Scanner(System.in);
-        if(sysInput.hasNextLine())
-        {
-            inputLocationFile = sysInput.nextLine();
-            if (!inputLocationFile.isEmpty())
-            {
-                inputFilePath = inputLocationFile;
-            }
-        }
         
         Scanner scannerObj = new Scanner(new File(inputFilePath));
         
@@ -341,7 +345,7 @@ class EpidemicDataHandler{
     void generateEpidemicAvgDiffFile(HashMap<String, String> epidemicWordFileHash, List<String> epidemicFileValuesList, HashMap<String, List<String>> adjacencyHashMap, String enteredFile, String outputDir) throws Exception
     {
         
-        //Generate epidemic avg file and epidemic diff file
+        //Generate EpidemicWordFileAvg and EpidemicWordFileDiff
         List<String> tempList;
         String hashOutputListString;
         String key;
@@ -355,18 +359,16 @@ class EpidemicDataHandler{
         String avgString;
         List<String> neighborList;
         
-        PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"EpidemicWordFileAvg", "UTF-8");
+        PrintWriter epidemicAvgWriter = new PrintWriter(outputDir+"epidemic_word_file_avg", "UTF-8");
         
-        PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"EpidemicWordFileDiff", "UTF-8");
+        PrintWriter epidemicDiffWriter = new PrintWriter(outputDir+"epidemic_word_file_diff", "UTF-8");
         
-        List<String> maxEpidemicWordFileAvgVector = null;
-        List<String> minEpidemicWordFileAvgVector = null;
+       
         Double maxStrengthAvg = 0.0;
         Double curStrengthAvg = 0.0;
         Double minStrengthAvg = 10000.0;
         
-        List<String> maxEpidemicWordFileDiffVector = null;
-        List<String> minEpidemicWordFileDiffVector = null;
+       
         Double maxStrengthDiff = 0.0;
         Double curStrengthDiff = 0.0;
         Double minStrengthDiff = 10000.0;
@@ -580,12 +582,47 @@ class EpidemicDataHandler{
     }
     
     
+    void formHeatMap(int [] heatMapMaxState, int [] heatMapMinState, String heatMapFileName, String locationFileName) throws Exception
+    {
+        Scanner scInput = new Scanner(System.in);
+        
+        String path = "cd('/Users/karthikchandrasekar/Documents/MATLAB')";
+        String inputPath;
+        System.out.println("Enter matlab source code directory");
+        if(scInput.hasNextLine())
+        {
+            inputPath = scInput.nextLine();
+            if (!inputPath.isEmpty())
+            {
+                path = inputPath;
+            }
+        }
+        
+      //Create a proxy, which we will use to control MATLAB
+        MatlabProxyFactory factory = new MatlabProxyFactory();
+        MatlabProxy proxy = factory.getProxy();
+        
+        //set matlab path
+        proxy.eval(path);
+        proxy.setVariable("max_elements", heatMapMaxState);
+        proxy.setVariable("min_elements", heatMapMinState);
+        System.out.println(heatMapFileName);
+        proxy.setVariable("f_name", heatMapFileName);
+        proxy.setVariable("location_fname", locationFileName);
+
+       
+        proxy.eval("plot_graph(f_name, location_fname, max_elements, min_elements)");
+        proxy.disconnect();
+        
+    }
     
     public void main(Logger logger)
     {
         
         String dirPath = "/Users/karthikchandrasekar/Downloads/sampledata_P1_F14/Epidemic Simulation Datasets";
         //String dirPath = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/";
+        String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
+
         String inputDirPath = "";
         MyUtil muObj = new MyUtil();
         Double maxValue = 0.0;
@@ -623,7 +660,7 @@ class EpidemicDataHandler{
                     outputDir = outputDirPath;
                 }
             }
-            PrintWriter writer = new PrintWriter(outputDir+"EpidemicWordFile", "UTF-8");
+            PrintWriter writer = new PrintWriter(outputDir+"epidemic_word_file", "UTF-8");
 
             
             System.out.println("Entered output directory" + outputDir );
@@ -636,6 +673,20 @@ class EpidemicDataHandler{
             
             System.out.println("Enter alpha value");
             Alpha = Double.parseDouble(scInput.nextLine());
+            
+            
+            String inputLocationFile;
+            
+            System.out.println("Enter location matrix input file location");
+            Scanner sysInput = new Scanner(System.in);
+            if(sysInput.hasNextLine())
+            {
+                inputLocationFile = sysInput.nextLine();
+                if (!inputLocationFile.isEmpty())
+                {
+                    inputFilePath = inputLocationFile;
+                }
+            }
             
             //Bands Generator
             logger.info("Bands generator");
@@ -655,6 +706,7 @@ class EpidemicDataHandler{
                 if(!(file.getName().equals(enteredFile)))
                 {continue;}
                 //Task 1 - a
+                //Normalize the input set of files
                 valuesList = muObj.readCsv(file, logger);
                 maxValue = findMax(valuesList);
                 valuesList = normalizeData(valuesList, maxValue);
@@ -662,6 +714,7 @@ class EpidemicDataHandler{
                           
                
                 //Task 1 - c
+                //Generate EpidemicWordFile
                 headerList = valuesList.get(0);
                 headerValueColumnMap = muObj.formHeaderValueHash(valuesList);
                 generateEpidemicWordFile(headerValueColumnMap, file.getName(), headerList, writer, logger, epidemicWordFileHash, epidemicFileValuesList, window, shift, enteredFile);
@@ -670,19 +723,105 @@ class EpidemicDataHandler{
                 headerValueColumnMap = null;
             }
             logger.info("End of task 1"); 
-
             
             writer.close();
             
             //Task 2
-                     
+            // Generate EpidemicWordFileAvg,EpidemicWordFileDiff         
             HashMap<String, List<String>> adjacencyHashMap;        
-            adjacencyHashMap = formAdjacencyHashMap();
+            adjacencyHashMap = formAdjacencyHashMap(inputFilePath);
             generateEpidemicAvgDiffFile(epidemicWordFileHash, epidemicFileValuesList, adjacencyHashMap, enteredFile, outputDir);
             logger.info("End of task 2");        
             
-         
             
+            
+            //Task 3
+            //Generate values for heat map and call mat lab function for given file
+            String heatMapFileName = "/tmp/MWDBInput/Sample1.csv";
+            
+            String heatMapFile;
+            System.out.println("Enter a file name for heatmap");
+            heatMapFile = scInput.nextLine();
+            System.out.println("Entered file name is " + heatMapFile);
+            
+            if(heatMapFile.equals("epidemic_word_file"))
+            {
+                maxState = maxEpidemicWordFileVector.get(1);
+                minState = minEpidemicWordFileVector.get(1);
+                maxTimeIteration = Integer.valueOf(maxEpidemicWordFileVector.get(2));
+                minTimeIteration = Integer.valueOf(minEpidemicWordFileVector.get(2));
+            }
+            else if(heatMapFile.equals("epidemic_word_file_avg"))
+            {
+                System.out.println(maxEpidemicWordFileAvgVector);
+                System.out.println(minEpidemicWordFileAvgVector);
+                
+                maxState = maxEpidemicWordFileAvgVector.get(1);
+                minState = minEpidemicWordFileAvgVector.get(1);
+                maxTimeIteration = Integer.valueOf(maxEpidemicWordFileAvgVector.get(2));
+                minTimeIteration = Integer.valueOf(minEpidemicWordFileAvgVector.get(2));
+            }
+            else if(heatMapFile.equals("epidemic_word_file_diff"))
+            {
+                maxState = maxEpidemicWordFileDiffVector.get(1);
+                minState = minEpidemicWordFileDiffVector.get(1);
+                maxTimeIteration = Integer.valueOf(maxEpidemicWordFileDiffVector.get(2));
+                minTimeIteration = Integer.valueOf(minEpidemicWordFileDiffVector.get(2));
+            }
+            
+            
+            
+            
+            ArrayList<Integer> heatMapMaxState = new ArrayList<Integer>();
+            ArrayList<Integer> heatMapMinState = new ArrayList<Integer>();
+            
+            heatMapMaxState.add(stateList.indexOf(maxState)+1);
+            heatMapMaxState.add(maxTimeIteration);
+            heatMapMaxState.add(window);
+            
+            int count = 1;
+            System.out.println("Maxstate " + maxState);
+            System.out.println("Minstate " + minState);
+            System.out.println("MaxTimeIteration" + maxTimeIteration);
+            System.out.println("MinTimeIteration" + minTimeIteration);
+            
+            for(String neighbor: adjacencyHashMap.get(maxState))
+            {
+                heatMapMaxState.add(stateList.indexOf(neighbor)+1);
+                count ++;
+            }
+            
+            
+            heatMapMinState.add(stateList.indexOf(minState)+1);
+            heatMapMinState.add(minTimeIteration);
+            heatMapMinState.add(window);
+            count = 1;
+            for(String neighbor : adjacencyHashMap.get(minState))
+            {
+                heatMapMinState.add(stateList.indexOf(neighbor)+1);
+                count ++;
+            }
+
+            
+            int[] heatMapMax = new int[heatMapMaxState.size()];
+            for(int i=0;i<heatMapMaxState.size();i++)
+            {
+                heatMapMax[i] = heatMapMaxState.get(i);
+            }
+           
+            
+            int[] heatMapMin = new int[heatMapMinState.size()];
+            for(int j=0; j<heatMapMinState.size(); j++)
+            {
+                heatMapMin[j] = heatMapMinState.get(j);
+            }
+            
+            System.out.println("StateList " + stateList);
+            System.out.println("HeatMapMax " + heatMapMaxState);
+            System.out.println("HeatMapMin " + heatMapMinState);
+            System.out.println("Location file name" + inputFilePath);
+            formHeatMap(heatMapMax, heatMapMin, heatMapFileName, inputFilePath); 
+          
         }
         catch(Exception e)
         {
@@ -718,7 +857,7 @@ class BandsGenerator{
                 
         
          //Create a proxy, which we will use to control MATLAB
-         /***MatlabProxyFactory factory = new MatlabProxyFactory();
+         MatlabProxyFactory factory = new MatlabProxyFactory();
          MatlabProxy proxy = factory.getProxy();
          
          //set matlab path
@@ -727,23 +866,23 @@ class BandsGenerator{
          proxy.eval("res=quantization(r)");
          double[] bands = (double[]) proxy.getVariable("res");
          proxy.disconnect();
-        logger.info("Inside band generator");
- 
-        for(int i=0;i<bands.length;i++)
+         logger.info("Inside band generator");
+         double temp=0.0;
+        
+        bandsList.add(temp);
+        for(int i=0;i< bands.length;i++)
         {
-            bandsList.add(bands[i]);
+            temp += bands[i];
+            bandsList.add(temp);
         }
     
-        */
-        
-        
-        bandsList.add(0.0000);
+        /**bandsList.add(0.0000);
         bandsList.add(0.5763);
         bandsList.add(0.8904);
         bandsList.add(0.9836);
         bandsList.add(0.9986);
         bandsList.add(1.0);
-
+        **/
         
         getBandRepList();    
         System.out.println("band rep list" + bandRepList);

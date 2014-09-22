@@ -1,14 +1,14 @@
-function mwdb_task2_b_final(num_files, skip_length)
+function mwdb_task2_b_final(num_files, winsize, epidemic_word_file_path)
 A = csvread('LocationMatrix.csv',1,1);
 [lrows, lcols] = size(A);
-winsize = 5;
 alpha = 0.345;
 wsize = 3+winsize;
+num_files
 for g=1:num_files
         ofname  = strcat('diffn',num2str(g));
         fname = strcat('n',num2str(g));
-        fname = strcat('E:\MWDB\sampledata_P1_F14\sampledata_P1_F14\Epidemic Simulation Datasets\epidemic_word_files\',fname);
-        ofname = strcat('E:\MWDB\sampledata_P1_F14\sampledata_P1_F14\Epidemic Simulation Datasets\epidemic_word_files\',ofname);
+        fname = strcat(epidemic_word_file_path,fname);
+        ofname = strcat(epidemic_word_file_path,ofname);
         fname = strcat(fname,'.csv');
         ofname = strcat(ofname,'.csv');
         disp(strcat('loaded file',fname));
