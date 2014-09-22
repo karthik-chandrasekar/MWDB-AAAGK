@@ -8,10 +8,12 @@ imagesc(X,Y,transpose(S));
 hold;
 rectangle('Position',[max_elements(2),max_elements(1),max_elements(3),1],'FaceColor','r')
 rectangle('Position',[min_elements(2),min_elements(1),min_elements(3),1],'Curvature',[1,1],'FaceColor','g')
-for h=4:size(max_elements,2)-3
+for h=4:size(max_elements,2)
+    disp(h)
     rectangle('Position',[max_elements(1),max_elements(h),max_elements(3),1]);
 end;
-for d=4:size(min_elements,2)-3
+for d=4:size(min_elements,2)
+    disp(d)
     rectangle('Position',[min_elements(1),min_elements(d),min_elements(3),1]);
 end;
 end
