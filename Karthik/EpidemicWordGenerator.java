@@ -775,7 +775,7 @@ class EpidemicDataHandler{
             ArrayList<Integer> heatMapMaxState = new ArrayList<Integer>();
             ArrayList<Integer> heatMapMinState = new ArrayList<Integer>();
             
-            heatMapMaxState.add(stateList.indexOf(maxState));
+            heatMapMaxState.add(stateList.indexOf(maxState)+1);
             heatMapMaxState.add(maxTimeIteration);
             heatMapMaxState.add(window);
             
@@ -787,18 +787,18 @@ class EpidemicDataHandler{
             
             for(String neighbor: adjacencyHashMap.get(maxState))
             {
-                heatMapMaxState.add(stateList.indexOf(neighbor));
+                heatMapMaxState.add(stateList.indexOf(neighbor)+1);
                 count ++;
             }
             
             
-            heatMapMinState.add(stateList.indexOf(minState));
+            heatMapMinState.add(stateList.indexOf(minState)+1);
             heatMapMinState.add(minTimeIteration);
             heatMapMinState.add(window);
             count = 1;
             for(String neighbor : adjacencyHashMap.get(minState))
             {
-                heatMapMinState.add(stateList.indexOf(neighbor));
+                heatMapMinState.add(stateList.indexOf(neighbor)+1);
                 count ++;
             }
 

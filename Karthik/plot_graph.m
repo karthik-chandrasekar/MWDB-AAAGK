@@ -15,3 +15,4 @@ for d=4:size(min_elements,2)-3
     rectangle('Position',[min_elements(1),min_elements(d),min_elements(3),1]);
 end;
 end
+
