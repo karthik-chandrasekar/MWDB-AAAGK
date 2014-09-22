@@ -1,7 +1,7 @@
 README
 =====
 
-`Task 1` : 
+**Task 1** : 
 
 Files : 
 task1.py    --> Imports dataNorm and then calls the utility functions in them. 
@@ -13,7 +13,7 @@ program.
 
 Output : Normalized, Quantized and windowed output in a file named epidemic_word_file given an input shift and window length under the current working directory. 
 
-`Task 2` :
+**Task 2** :
 
 Files 
 task2.py --> takes the graphFile and weight of alpha as input. 
@@ -23,7 +23,7 @@ to find the average and diff.
 Invocation : python task2.py ../sampledata_P1_F14/Graphs/LocationMatrix.csv
 Output : The average and diff files dumped into files.  
 
-`Task 3` :
+**Task 3** :
 
 Files 
 
