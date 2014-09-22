@@ -1,14 +1,13 @@
-function mwdb_task2_a_final(num_files, skip_length)
+function mwdb_task2_a_final(num_files, winsize, epidemic_word_file_path)
 A = csvread('LocationMatrix.csv',1,1);
 [lrows, lcols] = size(A);
-winsize = 5;
 alpha = 0.345;
 wsize = 3+winsize;
 for g=1:num_files
         ofname  = strcat('avgn',num2str(g));
         fname = strcat('n',num2str(g));
-        fname = strcat('E:\MWDB\sampledata_P1_F14\sampledata_P1_F14\Epidemic Simulation Datasets\epidemic_word_files\',fname);
-        ofname = strcat('E:\MWDB\sampledata_P1_F14\sampledata_P1_F14\Epidemic Simulation Datasets\epidemic_word_files\',ofname);
+        fname = strcat(epidemic_word_file_path,fname);
+        ofname = strcat(epidemic_word_file_path,ofname);
         fname = strcat(fname,'.csv');
         ofname = strcat(ofname,'.csv');
         disp(strcat('loaded file',fname));
@@ -44,7 +43,7 @@ for g=1:num_files
                 weight_neighbor_avg = sum(weight_vector_nei)./ncols;
                 weight_neighbor_avg = (1-alpha).*(weight_neighbor_avg);
                else
-                   weight_neighbor_avg = weight_vector_nei;
+                   weight_neighbor_avg = (1-alpha).*weight_vector_nei;
                end;
             weight_final_avg = weight_avg+weight_neighbor_avg;
             output_matrix(i,1:3)=M(i,1:3);
