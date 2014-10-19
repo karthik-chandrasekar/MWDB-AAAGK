@@ -26,7 +26,7 @@ public class Phase1Runnable {
 		System.out.println("Enter the directory of input files: ");
 		String dir = scanner.nextLine();
 		if(dir==null || dir.isEmpty())
-			dir="/home/akshay/Downloads/sampledata_P1_F14/Epidemic Simulation Datasets1";
+			dir="/home/akshay/MWDB_data";
 		
 		System.out.println("Enter file name to analyze: ");
 		String file = scanner.nextLine();
@@ -42,13 +42,13 @@ public class Phase1Runnable {
 			if(i==1){
 				
 				Task1.execute(r, w, h, dir);
-				Task3.execute(file, 1, w);
+				Task3.execute(file, 1, w,dir);
                   				
 			}
 			else if(i==2 || i==3){
 				Task1.execute(r, w, h, dir);
 				Task2.execute(a);
-				Task3.execute(file, i, w);
+				Task3.execute(file, i, w,dir);
 			}
 			else
 				System.out.println("Input correct value");

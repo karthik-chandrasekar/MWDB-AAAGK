@@ -18,7 +18,7 @@ import matlabcontrol.MatlabProxyFactory;
 
 public class Task1 {
     
-	static double[] bands = {0.5763,0.3141,0.0932,0.015,0.0013}; 
+	static double[] bands = null; 
     static boolean executed1=false;
     
     public static void execute(int r,int w,int h,String folderName){
@@ -141,7 +141,7 @@ public class Task1 {
 			proxy = factory.getProxy();
 		
 		//set matlab path
-		String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
+		String path = "cd(\'/home/akshay')";
 		proxy.eval(path);
 		proxy.setVariable("r", i);
 		proxy.eval("res=quantization(r)");
