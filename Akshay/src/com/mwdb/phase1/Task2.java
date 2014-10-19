@@ -19,7 +19,7 @@ public class Task2 {
 		
 		if(!executed2){
 		File EWfile = new File("epidemic_word_file.txt");
-		File graph = new File("LocationMatrix.csv");
+		File graph = new File("/home/akshay/LocationMatrix/LocationMatrix.csv");
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(graph));
 		    String line;

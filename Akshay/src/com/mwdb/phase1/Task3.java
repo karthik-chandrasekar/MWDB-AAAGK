@@ -17,7 +17,7 @@ import matlabcontrol.MatlabProxyFactory;
 
 public class Task3 {
 
-	public static void execute(String InputFile,int fileIndex,int w) {
+	public static void execute(String InputFile,int fileIndex,int w,String dir) {
 		File EWfile =null;
 		if(fileIndex==1)
 			EWfile = new File("epidemic_word_file.txt");
@@ -129,7 +129,7 @@ public class Task3 {
         	 minelements.add(Integer.parseInt(stateIndex.get(s1[i])));
          }
          
-        //  plot(convertIntegers(maxelements),convertIntegers(minelements),InputFile);     
+         plot(convertIntegers(maxelements),convertIntegers(minelements),InputFile,dir);     
 		 System.out.println("Max State : "+ maxState);
 		 System.out.println("Min State : "+ minState);
 		 System.out.println("Max value Iteration : "+ maxTime);
@@ -148,22 +148,23 @@ public class Task3 {
 		
 	}
 	
-	private static void plot(int[] maxelements, int[] minelements, String InputFile) {
+	private static void plot(int[] maxelements, int[] minelements, String InputFile,String dir) {
 		// TODO Auto-generated method stub
 		try {
 		MatlabProxyFactory factory = new MatlabProxyFactory();
 		MatlabProxy proxy = factory.getProxy();
 		//set matlab path
-		String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
+		String path = "cd(\'/home/akshay')";
 		
 			proxy.eval(path);
 		
-		//proxy.setVariable("r", );
+		
 			proxy.setVariable("max_elements", maxelements);
 			proxy.setVariable("min_elements", minelements);
-			//System.out.println(heatMapFileName);
-			proxy.setVariable("f_name", InputFile);
-			proxy.eval("plot_graph(f_name, max_elements, min_elements)");
+			
+			proxy.setVariable("f_name", dir +"/"+InputFile);
+			proxy.setVariable("locationM", "/home/akshay/LocationMatrix/LocationMatrix.csv");
+			proxy.eval("plot_graph(f_name,locationM, max_elements, min_elements)");
 			proxy.disconnect();
 			} catch (MatlabInvocationException e) {
 			// TODO Auto-generated catch block
