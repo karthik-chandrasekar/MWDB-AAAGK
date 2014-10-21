@@ -1,7 +1,17 @@
 package com.mwdb.phase2;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class FastMap {
 
@@ -11,15 +21,34 @@ public class FastMap {
 	double[][] OriginaldistanceMatrix;
 	double[][] distanceMatrix;
 	int[][] PV;
+	String DirPath;
 	
-	public FastMap(int N,int k) {
+	private ArrayList<File> files = new ArrayList<File>();
+	
+	public FastMap(int N,int k,String DirPath) {
 		this.N = N;
 		this.r= k; 
 		coordinates = new double[N][k];
 		PV = new int[2][k];
+		this.DirPath=DirPath;
 	}
 	
-	private double[][] ComputeDistanceMatrix(String DirPath) {
+	private double[][] ComputeDistanceMatrix() {
+		
+		File folder = new File(DirPath);
+		
+		for( File file : folder.listFiles()){
+			files.add(file);
+		}
+		
+       for(int i=0;i<files.size();i++){
+    	   
+    	   for(int j=i+1;j<files.size();j++){
+    		   
+    		   OriginaldistanceMatrix[i][j]= getSimilarity(files.get(i), files.get(j));
+    	   }
+       }		
+		
 		return null;
 	}
 	
@@ -29,7 +58,7 @@ public class FastMap {
 		
 		int iteration = 0;
 		
-		while(k<=0){
+		while(k>0){
 		
 			iteration++;
 		
@@ -45,14 +74,11 @@ public class FastMap {
 		
 	    for(int i=0;i<N;i++){
 	    	coordinates[i][iteration] = (double)(Math.pow(distanceMatrix[pv[0]][i], 2) + Math.pow(distanceMatrix[pv[0]][pv[1]], 2)-Math.pow(distanceMatrix[pv[1]][i], 2))/(2*distanceMatrix[pv[0]][pv[1]]);
-	    	
 	    }
 	    
 	    for(int i=0;i<N;i++){
-	    	for(int j=0;j<N;j++){
-	    		if(i==j){
-	    			continue;
-	    		}
+	    	for(int j=i+1;j<N;j++){
+	    		
 	    		distanceMatrix[i][j] = Math.sqrt(Math.pow(distanceMatrix[i][j], 2) - Math.pow(coordinates[i][iteration] - coordinates[j][iteration], 2));
 	    	}
 	    }
@@ -85,14 +111,18 @@ public class FastMap {
 			
 		   }
 		}
-			
+		temp = Double.MIN_VALUE;
+		
 		for(int j=0; j < distanceMatrix.length;j++){
 			
-			if(pv[0] == j)
-				continue;
 			
-			if(distanceMatrix[pv[0]][j] > temp){
+			if( j > pv[0] && distanceMatrix[pv[0]][j] > temp){
 				 temp = distanceMatrix[pv[0]][j];
+				 pv[1] = j;
+				
+			   }
+			else if( j < pv[0] && distanceMatrix[j][pv[0]] > temp){
+				 temp = distanceMatrix[j][pv[0]];
 				 pv[1] = j;
 				
 			   }
@@ -133,23 +163,43 @@ public class FastMap {
 	    		   newCoordiantes[i] = (double)(Math.pow(distances[PV[0][i]], 2) + Math.pow(OriginaldistanceMatrix[PV[0][i]][PV[1][i]], 2)- Math.pow(distances[PV[1][i]], 2))/(2*OriginaldistanceMatrix[PV[0][i]][PV[1][i]]);
 	    	   }
 	   	      
-	    	   int[] results = findSortedDistancesbtwPoints(newCoordiantes);
+	    	   Set<Integer> results = findSortedDistancesbtwPoints(newCoordiantes);
 	    	   
 	    	   
 	    	  return null;
 	      }
 
-		private int[] findSortedDistancesbtwPoints(double[] newCoordiantes) {
+		private Set<Integer> findSortedDistancesbtwPoints(double[] newCoordiantes) {
 		  
 			HashMap<Integer,Double > results = new HashMap<Integer, Double>();
 			for(int i=0;i<N;i++){
 				results.put(i, getEuclideanDistances(newCoordiantes,coordinates[i]));
 			}
 			
-			return null;
+			results = sortByValues(results);
+			
+			return results.keySet();
 			//results
 		}
 
+		private static HashMap sortByValues(HashMap map) { 
+		       List list = new LinkedList(map.entrySet());
+		       // Defined Custom Comparator here
+		       Collections.sort(list, new Comparator() {
+		            public int compare(Object o1, Object o2) {
+		               return ((Comparable) ((Map.Entry) (o1)).getValue())
+		                  .compareTo(((Map.Entry) (o2)).getValue());
+		            }
+		       });
+
+		        HashMap sortedHashMap = new LinkedHashMap();
+		       for (Iterator it = list.iterator(); it.hasNext();) {
+		              Map.Entry entry = (Map.Entry) it.next();
+		              sortedHashMap.put(entry.getKey(), entry.getValue());
+		       } 
+		       return sortedHashMap;
+		  }
+		
 		private double getEuclideanDistances(double[] newCoordiantes,
 				double[] coordinates2) {
   
@@ -162,7 +212,21 @@ public class FastMap {
 		}
 
 		private double[] getDistancesWithAllObjects(String filePath) {
-			// TODO Auto-generated method stub
-			return null;
+			
+			File folder = new File(DirPath);
+			File searchInput = new File(filePath);
+			
+			double[] result = new double[N];
+			for(int i=0;i<N;i++){
+				
+				result[i] = getSimilarity(files.get(i),searchInput);
+			}
+			
+			return result;
+		}
+
+		private double getSimilarity(File file, File searchInput) {
+			
+			return 2.5;
 		}
 }
