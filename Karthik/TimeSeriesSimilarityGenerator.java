@@ -162,7 +162,7 @@ class SimilarityGenerator
     }
     
 
-    public void constructAMatrix(List<List<String>> fileOneWordList, List<List<String>> fileTwoWordList)
+    public double[][] constructAMatrix(List<List<String>> fileOneWordList, List<List<String>> fileTwoWordList)
     {
         double similarity = 0;
         int rowSize = fileOneWordList.size();
@@ -180,25 +180,59 @@ class SimilarityGenerator
                 AMatrix[i][j] = similarity; 
             }
         }
+        return AMatrix;
     }
     
+    double matrixMultiply(List<Integer> binaryVectorOne, double[][] AMatrix, List<Integer> binaryVectorTwo)
+    {
+        double fileSimilarity = 0;
+        double [][] tempMatrix = new double[1][binaryVectorTwo.size()];
+        double temp=0;
+                
+        //Multiply binaryVectorOne and AMatrix
+        for(int i=0;i<binaryVectorTwo.size();i++)
+        {
+            temp = 0;
+            for(int j=0;j<binaryVectorOne.size();j++)
+            {
+                temp += binaryVectorOne.get(j) * AMatrix[j][i];
+            }
+            tempMatrix[0][i] = temp;
+        }
+        
+        //Multiply tempMatrix and binaryVectorTwo
+        for(int i=0; i<binaryVectorTwo.size();i++)
+        {
+            temp = 0;
+            temp += tempMatrix[0][i] * binaryVectorTwo.get(i);
+        }
+        fileSimilarity = temp;
+        
+        return fileSimilarity; 
+    }
     
     public void main() throws Exception
     {
         List<List<String>> fileOneWordList = new ArrayList<List<String>>();
         List<List<String>> fileTwoWordList = new ArrayList<List<String>>();
-        String fileNameOne = "";
-        String fileNameTwo = "";
+        String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileDiff";
+        String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileDiff";
         List<Integer> binaryVectorOne;
         List<Integer> binaryVectorTwo;
         String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
+        double fileSimilarity;
         
         adjacencyHashMap = formAdjacencyHashMap(inputFilePath);
         collectWords(fileNameOne, fileOneWordList);
         collectWords(fileNameTwo, fileTwoWordList); 
         binaryVectorOne = getBinaryVector(fileOneWordList);
         binaryVectorTwo = getBinaryVector(fileTwoWordList);
-        constructAMatrix(fileOneWordList, fileTwoWordList); 
+        double[][] AMatrix = constructAMatrix(fileOneWordList, fileTwoWordList);    
+        
+        //Multiply matrices
+        fileSimilarity = matrixMultiply(binaryVectorOne, AMatrix, binaryVectorTwo);
+        
+        System.out.println(fileSimilarity);
     }
 }
 
