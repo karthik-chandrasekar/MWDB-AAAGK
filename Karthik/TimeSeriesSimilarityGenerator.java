@@ -1,5 +1,9 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Scanner;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.*;
@@ -9,207 +13,171 @@ class SimilarityGenerator
     HashMap<String, Map<String, List<String>>> wordsIndexMap = new HashMap<String, Map<String, List<String>>>(); 
     HashMap<String, Integer> wordsIndexHash  = new HashMap<String, Integer>();
     int wordsIndex = 0;
-    String fileNameOne = "";
-    String fileNameTwo = "";
+    HashMap<String, List<String>> adjacencyHashMap;
+    List<String> tempList;
 
-    public List<Integer> collectWords(String fileName) throws FileNotFoundException
+    
+    public void collectWords(String fileName, List<List<String>> wordList) throws FileNotFoundException
     {
+        //1.csv,US-AK,2012-01-01 12:00:00,0.28816285436749933,0.28816285436749933,0.28816285436749933,0.28816285436749933,0.28816285436749933
         File inputFile = new File(fileName);
         Scanner input = new Scanner(inputFile);
-        List<String> tempList = new ArrayList<String>();
-        String wordTempString;
-        String metaTempString;
-        List<Integer> wordsIndexList = new ArrayList<Integer>();
-        Map<String, List<String>> tempMap = null;
-        List<String> metaTempList = null;
         
         while(input.hasNextLine())
         {
             tempList = Arrays.asList(input.nextLine().split(","));
-            wordTempString="";
-            metaTempString="";
-            
-            for(int i=0;i< tempList.size();i++)
+            if (!wordList.contains(tempList))
             {
-                
-                if (i<3)
-                {
-                    if(i==1)continue;
-                    metaTempString = tempList.get(i) + "-";
-                }
-                else
-                {
-                    wordTempString += tempList.get(i) + "-";
-                }
+                wordList.add(tempList);
             }
-            wordTempString = wordTempString.substring(0, wordTempString.length()-1);
-                    
-            
-            if(wordsIndexMap.containsKey(wordTempString))
-            {
-                tempMap = wordsIndexMap.get(wordTempString);
-                
-                if(tempMap.containsKey(fileName))
-                {
-                    metaTempList = tempMap.get(fileName);
-                    metaTempList.add(metaTempString);
-                    tempMap.put(fileName, metaTempList);
-                }
-                else
-                {
-                    metaTempList = new ArrayList<String>();
-                    metaTempList.add(metaTempString);
-                    tempMap.put(fileName, metaTempList);
-                }
-            }
-            else
-            {
-                tempMap = new HashMap<String, List<String>>();              
-                metaTempList = new ArrayList<String>();
-                wordsIndexHash.put(wordTempString, wordsIndex); 
-                wordsIndex++;
-                tempMap.put(fileName, metaTempList);
-            }
-            wordsIndexMap.put(wordTempString, tempMap);
-
         }
-        return wordsIndexList;      
     }
     
-    public List<Integer> getBinaryVector(List<Integer> wordsIndexOne)
+    
+    public List<Integer> getBinaryVector(List<List<String>> wordList)
     {
-        List<Integer> binaryVectorOne = new ArrayList<Integer>();
+        List<Integer> binaryVectorOne = new ArrayList<Integer>(Collections.nCopies(wordList.size(), 1));
+        return binaryVectorOne; 
+    }
+    
+    public double getWordMatch(List<String> rowWord, List<String> colWord)
+    {
+        int matchCount = 0;
+        int misMatchCount = 0;
+        int totalLen = 0;
+        double similarity = 0;
         
-        for(int i=0;i<wordsIndexMap.size();i++)
+        for(int i=0;i< Math.min(rowWord.size(), colWord.size());i++)
         {
-            if(wordsIndexOne.contains(i))
+            if(rowWord.get(i).equals(colWord.get(i)))
             {
-                binaryVectorOne.add(1);
-            }
-            else
-            {
-                binaryVectorOne.add(0);
+                matchCount ++;
             }
         }
-        return wordsIndexOne;       
+        totalLen = Math.max(rowWord.size(), colWord.size());
+        misMatchCount = totalLen - matchCount;
+        if (misMatchCount > ((double)totalLen/2))
+        {
+            similarity = 0;
+        }
+        else
+        {
+            similarity = (1/(double)totalLen) * matchCount;
+        }
+        return similarity;      
     }
     
-    public double getWordMatch(String rowWord, String colWord)
-    {
-        //Find the euclidean distance between given two words
-        return 0.0;
+    
+    public HashMap<String, List<String>> formAdjacencyHashMap(String inputFilePath) throws Exception
+    {    
+        //Parse adjacency matrix and form a state, adjacent states hash map
         
+        HashMap<String, List<String>> adjacencyHashMap = new HashMap<String, List<String>>();
+        List<String> headerList;
+        List<String> valueList;
+        int count;
+        String header="";
+        
+        
+        Scanner scannerObj = new Scanner(new File(inputFilePath));
+        
+        headerList = Arrays.asList(scannerObj.nextLine().split(","));
+        while(scannerObj.hasNextLine())
+        {
+            count = 0; 
+            valueList = new ArrayList<String>();
+            for(String value : scannerObj.nextLine().split(","))
+            {
+                if(count == 0)
+                {
+                    header = value;
+                    count++;
+                    continue;
+                }
+                else if (Integer.parseInt(value)==1)
+                {
+                    valueList.add("US-"+headerList.get(count));
+                }
+                count ++;
+            }
+            adjacencyHashMap.put("US-"+header, valueList);
+        }     
+        return adjacencyHashMap;
     }
     
     public boolean isNeighbor(String stateOne, String stateTwo)
     {
-        return true;
+        return adjacencyHashMap.get(stateOne).contains(stateOne);
     }
     
     public double getStateMatch(List<String> listOne, List<String> listTwo)
     {
-        String tempStateOne ="";
-        String tempStateTwo = "";
         double similarity = 0.0;
         
-        for(String stateTimeOne: listOne)
+        if(listOne.get(1).equals(listTwo.get(1)))
         {
-            tempStateOne = stateTimeOne.split("-")[0];
-            for(String stateTimeTwo: listTwo)
-            {
-                tempStateTwo = stateTimeTwo.split("-")[0];
-                if (tempStateOne.equals(tempStateTwo))
-                {
-                    similarity += 10;
-                }
-                else if(isNeighbor(tempStateOne, tempStateTwo))
-                {
-                    similarity += 5;
-                }
-                else 
-                {
-                    similarity += 0;
-                }
-            }
+            similarity = 1;
+        }
+        else if(isNeighbor(listOne.get(1), listOne.get(2)))
+        {
+            similarity = 0.5;
         }
         return similarity;
     }
-    
-    double getTimeMatchValue(int tempTimeOne, int tempTimeTwo)
-    {
-        //Return 1 % euclidean distance(tempTimeOne, tempTimeTwo)
-        return 0.0;
-    }
+        
     
     double getTimeMatch(List<String> listOne, List<String> listTwo)
     {
-        int tempTimeOne;
-        int tempTimeTwo;
-        double similarity=0.0;
+        double similarity = 0.0;
         
-        for(String stateTimeOne: listOne)
-        {
-            tempTimeOne = Integer.parseInt(stateTimeOne.split("-")[1]);
-            for(String stateTimeTwo: listTwo)
-            {
-                tempTimeTwo = Integer.parseInt(stateTimeTwo.split("-")[1]);
-                similarity += getTimeMatchValue(tempTimeOne, tempTimeTwo);
-            }
-        }
-        return similarity;
+        if(listOne.get(2).equals(listTwo.get(2)))
+            similarity = 0.2;
+        return similarity;      
     }
     
-    public double getStateTimeWordMatch(String rowWord, String colWord)
+    
+    public double getStateTimeMatching(String rowWord, String colWord)
     {
         double similarity = 0.0;
-        Map<String, List<String>> rowWordMap = wordsIndexMap.get(rowWord);
-        Map<String, List<String>> colWordMap = wordsIndexMap.get(colWord);
-        if(rowWordMap.containsKey(fileNameOne) && colWordMap.containsKey(fileNameTwo))
-        {
-            similarity += getStateMatch(rowWordMap.get(fileNameOne), rowWordMap.get(fileNameTwo));
-            similarity += getTimeMatch(rowWordMap.get(fileNameOne), rowWordMap.get(fileNameTwo));
-        }
-        else if (rowWordMap.containsKey(fileNameTwo) && colWordMap.containsKey(fileNameOne))
-        {
-            similarity += getStateMatch(rowWordMap.get(fileNameTwo), rowWordMap.get(fileNameOne));
-            similarity += getTimeMatch(rowWordMap.get(fileNameTwo), rowWordMap.get(fileNameOne));
-        }
-        return similarity;
+        
+        
+        return 0.0;
     }
-
     
-    public double getWordSimilarity(String rowWord, String colWord)
+    public double getWordSimilarity(List<String> rowWord, List<String> colWord)
     {
         //State Time word match - 1
         //State word match[If two states are neighbors] - 0.75  
         //Time word match - 0.6 
         //Word match  - 0.4
         
-        Map<String, List<String>> tempMapOne;
-        Map<String, List<String>> tempMapTwo;
+        
         double similarity = 0.0;
         
         similarity += getWordMatch(rowWord, colWord);
-        similarity += getStateTimeWordMatch(rowWord, colWord);
+        similarity += getStateMatch(rowWord, colWord);
+        similarity += getTimeMatch(rowWord, colWord);
         
         return similarity;
     }
     
-    public void constructAmatrix()
-    {       
-        double similarity=0;
-        List<String> allWordsList = new ArrayList(wordsIndexMap.keySet());
-        double [][] AMatrix = new double[allWordsList.size()][allWordsList.size()];
-        int rowWordIndex = 0;
-        int colWordIndex = 0;
+
+    public void constructAMatrix(List<List<String>> fileOneWordList, List<List<String>> fileTwoWordList)
+    {
+        double similarity = 0;
+        int rowSize = fileOneWordList.size();
+        int colSize =  fileTwoWordList.size();
+        double [][] AMatrix = new double[rowSize][colSize];
+        List<String> rowWord, colWord;
         
-        for(String rowWord: allWordsList)
-        {   rowWordIndex = wordsIndexHash.get(rowWord);
-            for(String colWord: allWordsList)
+        for(int i=0;i<rowSize;i++)
+        {
+            rowWord = fileOneWordList.get(i);
+            for(int j=0; j<colSize;j++)
             {
-                similarity = getWordSimilarity(rowWord, colWord);   
-                colWordIndex = wordsIndexHash.get(colWord);
-                AMatrix[rowWordIndex][colWordIndex] = similarity;
+                colWord = fileTwoWordList.get(j);
+                similarity = getWordSimilarity(rowWord, colWord);
+                AMatrix[i][j] = similarity; 
             }
         }
     }
@@ -217,17 +185,20 @@ class SimilarityGenerator
     
     public void main() throws Exception
     {
+        List<List<String>> fileOneWordList = new ArrayList<List<String>>();
+        List<List<String>> fileTwoWordList = new ArrayList<List<String>>();
         String fileNameOne = "";
         String fileNameTwo = "";
         List<Integer> binaryVectorOne;
         List<Integer> binaryVectorTwo;
-        List<Integer> wordsIndexOne;
-        List<Integer> wordsIndexTwo;
-        wordsIndexOne = collectWords(fileNameOne);
-        wordsIndexTwo = collectWords(fileNameTwo);  
-        binaryVectorOne = getBinaryVector(wordsIndexOne);
-        binaryVectorTwo = getBinaryVector(wordsIndexTwo);
-        constructAmatrix(); 
+        String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
+        
+        adjacencyHashMap = formAdjacencyHashMap(inputFilePath);
+        collectWords(fileNameOne, fileOneWordList);
+        collectWords(fileNameTwo, fileTwoWordList); 
+        binaryVectorOne = getBinaryVector(fileOneWordList);
+        binaryVectorTwo = getBinaryVector(fileTwoWordList);
+        constructAMatrix(fileOneWordList, fileTwoWordList); 
     }
 }
 
