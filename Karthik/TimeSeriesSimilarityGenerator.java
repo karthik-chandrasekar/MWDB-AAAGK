@@ -15,6 +15,7 @@ class SimilarityGenerator
     int wordsIndex = 0;
     HashMap<String, List<String>> adjacencyHashMap;
     List<String> tempList;
+    String inputFilePath;
 
     
     public void collectWords(String fileName, List<List<String>> wordList) throws FileNotFoundException
@@ -231,14 +232,15 @@ class SimilarityGenerator
         return fileSimilarity; 
     }
     
-    public double getFileSimilarity(String fileNameOne, String fileNameTwo) throws Exception
+    public double getFileSimilarity(String fileNameOne, String fileNameTwo, String locationFile) throws Exception
     {
         List<List<String>> fileOneWordList = new ArrayList<List<String>>();
         List<List<String>> fileTwoWordList = new ArrayList<List<String>>();
+        inputFilePath = locationFile;
         
         List<Integer> binaryVectorOne;
         List<Integer> binaryVectorTwo;
-        String inputFilePath = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
+        
         double fileSimilarity;
         
         adjacencyHashMap = formAdjacencyHashMap(inputFilePath);
@@ -290,7 +292,8 @@ public class TimeSeriesSimilarityGenerator {
          SimilarityGenerator simObj = new SimilarityGenerator();
          String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileDiffHead";
          String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileDiffHead";
-         simObj.getFileSimilarity(fileNameOne, fileNameTwo);
+         String locationFile = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
+         simObj.getFileSimilarity(fileNameOne, fileNameTwo, locationFile);
     }
 }
 
