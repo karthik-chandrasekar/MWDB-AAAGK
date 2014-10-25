@@ -108,7 +108,8 @@ class SimilarityGenerator
     
     public boolean isNeighbor(String stateOne, String stateTwo)
     {
-        return adjacencyHashMap.get(stateOne).contains(stateOne);
+        if (stateOne==null || stateTwo==null)return false;
+        return adjacencyHashMap.get(stateOne).contains(stateTwo);
     }
     
     public double getStateMatch(List<String> listOne, List<String> listTwo)
