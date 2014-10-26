@@ -162,7 +162,7 @@ class SimilarityGenerator
     }
     
 
-    public double[][] constructAMatrix(List<List<String>> fileOneWordList, List<List<String>> fileTwoWordList)
+    public double constructAMatrix(List<List<String>> fileOneWordList, List<List<String>> fileTwoWordList)
     {
         double similarity = 0;
         int rowSize = fileOneWordList.size();
@@ -171,8 +171,9 @@ class SimilarityGenerator
         List<String> rowWord, colWord;
         double maxSimilarity = 0;
         double newMaxSimilarity = 0;
+        double fileSimilarity = 0 ;
         
-        for(int i=0;i<rowSize;i++)
+        /***for(int i=0;i<rowSize;i++)
         {
             rowWord = fileOneWordList.get(i);
             for(int j=0; j<colSize;j++)
@@ -185,10 +186,20 @@ class SimilarityGenerator
                 }
                 AMatrix[i][j] = similarity; 
             }
+        }***/
+        
+        for(int i=0; i<rowSize; i++)
+        {
+            rowWord = fileOneWordList.get(i);
+            for(int j=0; j<colSize; j++)
+            {
+                colWord = fileTwoWordList.get(j);
+                fileSimilarity += getWordSimilarity(rowWord, colWord);
+            }
         }
         
         //Normalize matrix values between 0 and 1
-        for(int i=0; i<rowSize; i++)
+        /***for(int i=0; i<rowSize; i++)
         {
             for(int j=0;j<colSize; j++)
             {
@@ -198,11 +209,11 @@ class SimilarityGenerator
                     newMaxSimilarity = AMatrix[i][j];
                 }
             }
-        }
+        }***/
         //System.out.println("Max similarity " + maxSimilarity);
         //System.out.println("New Max Similarity" + newMaxSimilarity);
         
-        return AMatrix;
+        return fileSimilarity;
     }
     
     double matrixMultiply(List<Integer> binaryVectorOne, double[][] AMatrix, List<Integer> binaryVectorTwo)
@@ -247,12 +258,12 @@ class SimilarityGenerator
         adjacencyHashMap = formAdjacencyHashMap(inputFilePath);
         collectWords(fileNameOne, fileOneWordList);
         collectWords(fileNameTwo, fileTwoWordList); 
-        binaryVectorOne = getBinaryVector(fileOneWordList);
-        binaryVectorTwo = getBinaryVector(fileTwoWordList);
-        double[][] AMatrix = constructAMatrix(fileOneWordList, fileTwoWordList);    
+        //binaryVectorOne = getBinaryVector(fileOneWordList);
+        //binaryVectorTwo = getBinaryVector(fileTwoWordList);
+        fileSimilarity = constructAMatrix(fileOneWordList, fileTwoWordList);    
         
         //Multiply matrices
-        fileSimilarity = matrixMultiply(binaryVectorOne, AMatrix, binaryVectorTwo);
+        //fileSimilarity = matrixMultiply(binaryVectorOne, AMatrix, binaryVectorTwo);
         //System.out.println(fileSimilarity);
 
         //System.out.println(binaryVectorOne.size());
@@ -261,8 +272,9 @@ class SimilarityGenerator
         //System.out.println(binaryVectorTwo);
         
         //printMatrix(AMatrix, binaryVectorOne.size(), binaryVectorTwo.size());
-        
-        fileSimilarity = fileSimilarity / ((binaryVectorOne.size() * binaryVectorTwo.size()));
+        System.out.println(fileSimilarity);
+        System.out.println(fileOneWordList.size() + " " + fileTwoWordList.size());
+        fileSimilarity = fileSimilarity / ((fileOneWordList.size() * fileTwoWordList.size()));
         System.out.println(fileSimilarity);
         return fileSimilarity;
     }
