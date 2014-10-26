@@ -120,7 +120,7 @@ class SimilarityGenerator
         {
             similarity = 1;
         }
-        else if(isNeighbor(listOne.get(1), listOne.get(2)))
+        else if(isNeighbor(listOne.get(1), listTwo.get(1)))
         {
             similarity = 0.5;
         }
@@ -164,13 +164,9 @@ class SimilarityGenerator
 
     public double constructAMatrix(List<List<String>> fileOneWordList, List<List<String>> fileTwoWordList)
     {
-        double similarity = 0;
         int rowSize = fileOneWordList.size();
         int colSize =  fileTwoWordList.size();
-        double [][] AMatrix = new double[rowSize][colSize];
         List<String> rowWord, colWord;
-        double maxSimilarity = 0;
-        double newMaxSimilarity = 0;
         double fileSimilarity = 0 ;
         
         /***for(int i=0;i<rowSize;i++)
@@ -250,8 +246,6 @@ class SimilarityGenerator
         List<List<String>> fileTwoWordList = new ArrayList<List<String>>();
         inputFilePath = locationFile;
         
-        List<Integer> binaryVectorOne;
-        List<Integer> binaryVectorTwo;
         
         double fileSimilarity;
         
