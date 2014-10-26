@@ -70,22 +70,22 @@ class SimilarityGenerator
     
     
     public HashMap<String, List<String>> formAdjacencyHashMap(String inputFilePath) throws Exception
-    {    
+    {
         //Parse adjacency matrix and form a state, adjacent states hash map
-        
+
         HashMap<String, List<String>> adjacencyHashMap = new HashMap<String, List<String>>();
         List<String> headerList;
         List<String> valueList;
         int count;
         String header="";
-        
-        
+
+
         Scanner scannerObj = new Scanner(new File(inputFilePath));
-        
+
         headerList = Arrays.asList(scannerObj.nextLine().split(","));
         while(scannerObj.hasNextLine())
         {
-            count = 0; 
+            count = 0;
             valueList = new ArrayList<String>();
             for(String value : scannerObj.nextLine().split(","))
             {
@@ -97,18 +97,21 @@ class SimilarityGenerator
                 }
                 else if (Integer.parseInt(value)==1)
                 {
-                    valueList.add("US-"+headerList.get(count));
+                    valueList.add(headerList.get(count));
                 }
                 count ++;
             }
-            adjacencyHashMap.put("US-"+header, valueList);
-        }     
+            adjacencyHashMap.put(header, valueList);
+        }    
         return adjacencyHashMap;
     }
     
     public boolean isNeighbor(String stateOne, String stateTwo)
     {
+        //System.out.println(stateOne);
+        //System.out.println(stateTwo);
         if (stateOne==null || stateTwo==null)return false;
+        
         return adjacencyHashMap.get(stateOne).contains(stateTwo);
     }
     
@@ -168,6 +171,7 @@ class SimilarityGenerator
         int colSize =  fileTwoWordList.size();
         List<String> rowWord, colWord;
         double fileSimilarity = 0 ;
+        System.out.println(adjacencyHashMap);
         
         /***for(int i=0;i<rowSize;i++)
         {
@@ -297,8 +301,8 @@ public class TimeSeriesSimilarityGenerator {
          logger.info("Logger starts");
          
          SimilarityGenerator simObj = new SimilarityGenerator();
-         String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileDiffHead";
-         String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileDiffHead";
+         String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileDiff";
+         String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileDiff";
          String locationFile = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
          simObj.getFileSimilarity(fileNameOne, fileNameTwo, locationFile);
     }
