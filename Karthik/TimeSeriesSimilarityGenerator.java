@@ -171,7 +171,7 @@ class SimilarityGenerator
         int colSize =  fileTwoWordList.size();
         List<String> rowWord, colWord;
         double fileSimilarity = 0 ;
-        System.out.println(adjacencyHashMap);
+        //System.out.println(adjacencyHashMap);
         
         /***for(int i=0;i<rowSize;i++)
         {
@@ -270,8 +270,8 @@ class SimilarityGenerator
         //System.out.println(binaryVectorTwo);
         
         //printMatrix(AMatrix, binaryVectorOne.size(), binaryVectorTwo.size());
-        System.out.println(fileSimilarity);
-        System.out.println(fileOneWordList.size() + " " + fileTwoWordList.size());
+        //System.out.println(fileSimilarity);
+        //System.out.println(fileOneWordList.size() + " " + fileTwoWordList.size());
         fileSimilarity = fileSimilarity / ((fileOneWordList.size() * fileTwoWordList.size()));
         System.out.println(fileSimilarity);
         return fileSimilarity;
@@ -301,7 +301,7 @@ public class TimeSeriesSimilarityGenerator {
          logger.info("Logger starts");
          
          SimilarityGenerator simObj = new SimilarityGenerator();
-         String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileDiff";
+         String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileAvg";
          String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileDiff";
          String locationFile = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
          simObj.getFileSimilarity(fileNameOne, fileNameTwo, locationFile);
