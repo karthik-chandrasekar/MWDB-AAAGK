@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
-import java.util.*;
 
 class SimilarityGenerator
 {
@@ -39,27 +38,39 @@ class SimilarityGenerator
     
     public double getWordMatch(List<String> rowWord, List<String> colWord)
     {
-        int matchCount = 0;
+        // Find the common matching matching characters with same index in given window of the words
+        int matchCount = 0; //Total number of characters matching in window between two words
         int misMatchCount = 0;
         int totalLen = 0;
         double similarity = 0;
+        int windowMatchBoost = 3; //
+        int matchThreshold = 0;
+        int iterationCount = 0;
         
-        for(int i=0;i< Math.min(rowWord.size(), colWord.size());i++)
+        iterationCount = Math.min(rowWord.size(), colWord.size());
+        for(int i=0; i < iterationCount ;i++)
         {
+            if(i < 3)
+            {
+                continue;
+            }
+            //System.out.println(rowWord.get(i) + "  " + colWord.get(i));
             if(rowWord.get(i).equals(colWord.get(i)))
             {
                 matchCount ++;
             }
         }
-        totalLen = Math.max(rowWord.size(), colWord.size());
-        misMatchCount = totalLen - matchCount;
-        if (misMatchCount > ((double)totalLen/2))
+        
+        totalLen = Math.max(rowWord.size(), colWord.size())-3;
+        
+        matchThreshold = totalLen/2;
+        if (matchCount > matchThreshold)
         {
-            similarity = 0;
+            similarity = ((double)1/(double)totalLen) * matchCount * windowMatchBoost;
         }
         else
         {
-            similarity = (1/(double)totalLen) * matchCount;
+            similarity = 0;
         }
         return similarity;      
     }
@@ -74,8 +85,6 @@ class SimilarityGenerator
         List<String> valueList;
         int count;
         String header="";
-
-
         Scanner scannerObj = new Scanner(new File(inputFilePath));
 
         headerList = Arrays.asList(scannerObj.nextLine().split(","));
@@ -113,6 +122,11 @@ class SimilarityGenerator
     
     public double getStateMatch(List<String> listOne, List<String> listTwo)
     {
+        /*** Check if the state is equal between two given lists. State is located in index position 1 of the given lists. 
+             If the state is same give similarity as 1
+             If the states are neighbors assign similarity as 0.5
+        ***/
+        
         double similarity = 0.0;
         
         if(listOne.get(1).equals(listTwo.get(1)))
@@ -140,10 +154,19 @@ class SimilarityGenerator
     public double getWordSimilarity(List<String> rowWord, List<String> colWord)
     {   
         double similarity = 0.0;
+        double windowMatch = 0.0;
+        double stateMatch = 0.0;
+        double timeMatch = 0.0;
         
-        similarity += getWordMatch(rowWord, colWord);
-        similarity += getStateMatch(rowWord, colWord);
-        similarity += getTimeMatch(rowWord, colWord);
+        windowMatch = getWordMatch(rowWord, colWord);
+        similarity += windowMatch;
+        //if (windowMatch != 0.0){System.out.println("WordMatch " + similarity);}
+        stateMatch = getStateMatch(rowWord, colWord);
+        similarity += stateMatch;
+        //if (stateMatch!= 0.0){System.out.println("StateMatch " + similarity);}
+        timeMatch = getTimeMatch(rowWord, colWord);
+        similarity += timeMatch;
+        //if (timeMatch != 0.0){System.out.println("TimeMatch " + timeMatch);}
         
         return similarity;
     }
@@ -231,7 +254,7 @@ public class TimeSeriesSimilarityGenerator {
          String locationFile = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
          SimilarityGenerator simObj = new SimilarityGenerator(locationFile);
          String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFile";
-         String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileAvg";
+         String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFile";
          simObj.getFileSimilarity(fileNameOne, fileNameTwo);
     }
 }
