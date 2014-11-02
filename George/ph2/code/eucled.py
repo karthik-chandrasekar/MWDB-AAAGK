@@ -58,7 +58,6 @@ if __name__ == "__main__" :
     simFile1 = sys.argv[1]
     simFile2 = sys.argv[2]
 
-    print "#### Checking similarity of", simFile1, " and ", simFile2
     eucled = Eucledian() 
     eucled.refresh(simFile1, simFile2) 
     print eucled.similarity()
