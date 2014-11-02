@@ -1,8 +1,6 @@
 package com.mwdb.phase2;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,18 +14,19 @@ import java.util.Set;
 
 public class FastMap {
 
-	int N;
-	int r;
-	double[][] coordinates; 
-	double[] pivotDistances;
-	int[][] PV;
-	String DirPath;
-	SimilarityGenerator SimilarityObj;
-	private ArrayList<File> files = new ArrayList<File>();
+	int N; // no. of objects
+	int r; // reduced space dimension
+	double[][] coordinates;  // coordinates of every object in the reduced space
+	double[] pivotDistances; // distances between pivot objects in every iteration
+	int[][] PV; // indices of the pivot objects in every iteration
+	String DirPath; // input directory path of simulation files.
+	SimilarityWrapper sWrapper; // object to compute similatiry measure given two files 
+	private ArrayList<File> files = new ArrayList<File>(); 
 	double[][] distanceMatrix;
-	//private HashMap<String, Double> distancemeasures = new HashMap<String, Double>();
+	int option; 
 	
-	public FastMap(int r,String DirPath,String LocationMatrix) throws Exception {
+	
+	public FastMap(int r,String DirPath, int option) throws Exception {
 		
 		this.r = r;
 		this.DirPath=DirPath;
@@ -35,12 +34,13 @@ public class FastMap {
 		coordinates = new double[N][r];
 		pivotDistances = new double[r];
 		PV = new int[2][r];
-		
-		this.SimilarityObj = new SimilarityGenerator(LocationMatrix);
+		this.option = option;
+		this.sWrapper = new SimilarityWrapper();
 		distanceMatrix = new double[N][N];
 		computeDistanceMatrix();
+		
 	}
-	
+	// compute the initial distances between every object
 	private void computeDistanceMatrix() {
 		
 		double sim;
@@ -48,8 +48,9 @@ public class FastMap {
 			for(int j=i+1;j<N;j++){
 				try {
 					
-					sim = SimilarityObj.getFileSimilarity(files.get(i).getAbsolutePath(), files.get(j).getAbsolutePath());
 				
+				   
+					 sim  = sWrapper.getSimilarityForFiles(option, files.get(i).getAbsolutePath(), files.get(j).getAbsolutePath());
 				if(sim==0)
 					distanceMatrix[i][j]= Double.MAX_VALUE;
 				else
@@ -73,9 +74,10 @@ public class FastMap {
 		this.N = files.size();
 	}
 	
+	// find the coordinates of the objects in the reduced space
+	
 	public void getReducedSpace(){
 		
-		//distanceMatrix = deepCopy(OriginaldistanceMatrix);
 		
 		int iteration = 0;
 		int R=r;
@@ -107,16 +109,8 @@ public class FastMap {
 		}  
 	}
 
-	/*private double[][] deepCopy(double[][] originaldistanceMatrix2) {
-		
-		 double[][] distancematrix = new double[originaldistanceMatrix2.length][];
-		 for (int i=0; i <originaldistanceMatrix2.length; i++) {
-			 distancematrix[i] = Arrays.copyOf(originaldistanceMatrix2[i], originaldistanceMatrix2[i].length);
-		      }		
-         return distancematrix;
-		 
-	}*/
 
+// find the pivot objects using the projected distances of objects in the given iteration
 	private int[] chooseDistantObjects(int iteration) {
 		
 		int[] pv = new int[2];
@@ -148,16 +142,18 @@ public class FastMap {
 		return pv;
 		}
 	
+	// find the projected distance in an iteration between two objects recursively 
 	private double distancebtwObjects(int i, int i2, int iteration) {
 		
 		if(iteration<0)
 			return getDistance(i, i2);
 		else
+			// checks the double point overflow error.
 		{ double temp = Math.pow(distancebtwObjects(i, i2, iteration -1), 2)-Math.pow(coordinates[i][iteration]-coordinates[i2][iteration],2 );
 			return Math.sqrt(temp<0?0:temp);
 		}
 	}
-
+	// find the projected distance in an iteration between query object and other object recursively
 private double distancebtwObjects(int i, File file, double[] newCoordinates,int iteration) {
 		
 		if(iteration<0)
@@ -168,7 +164,7 @@ private double distancebtwObjects(int i, File file, double[] newCoordinates,int 
 		}
 	}
 	
-	
+	// calculates the error in the mapping of objects from higher dimension to a lower dimension.
 	public double calculateMappingError(){
 		
 		double sum1 =0;
@@ -186,36 +182,30 @@ private double distancebtwObjects(int i, File file, double[] newCoordinates,int 
 		for(i=0;i< N; i++){
 			
 			for(j=i+1;j<N;j++){
-				sum2 = sum2 + distancebtwObjects(i, j, r-1);
+				sum2 = sum2 + getEuclideanDistances(coordinates[i], coordinates[j]);
 			}
 		}
 		return sum1-sum2;
 	} 
-		// assuming euclidian distance for finding distances between objs in target space for query by example.
-	
-	private int[] getSimilarSimulations(String filePath,int r, int k){
+		
+	//Map the query object to the reduced dimension and find top k similar objects
+		private int[] getSimilarSimulations(String filePath,int r, int k){
 	    	  
-	    	   double[] distances = getDistancesWithAllObjects(filePath);
 	    	   
 	    	   double[] newCoordiantes = new double[r];
-	    
-	    	   //distanceMatrix = deepCopy(OriginaldistanceMatrix);
-	    	   
+	       	   
 	    	   double pivotDistance = 0;
 	    	   
 	    	   File query = new File(filePath); 
 	    	   
 	    	   for(int i=0;i<r;i++){
-	    		
+	
 	    		  pivotDistance = pivotDistances[i];
 	    		   
 	    		  newCoordiantes[i] = (double)(Math.pow(distancebtwObjects(PV[0][i], query,newCoordiantes, i-1), 2) - Math.pow(distancebtwObjects(PV[1][i], query,newCoordiantes, i-1), 2) + Math.pow(pivotDistance, 2))/(2*pivotDistance);
 	    		   
-	    		  /*for(int j=0;j<N;j++){
-	    			  distances[j]= Math.sqrt(Math.pow(distances[j], 2)-Math.pow(coordinates[j][i]-newCoordiantes[i],2) );
-	    		  }*/
 	    	   }
-	   	      
+	    	// assuming euclidean distance for finding distances between objs in target space for query by example.   	      
 	    	   Set<Integer> results = findSortedDistancesbtwPoints(newCoordiantes);
 	    	   Iterator<Integer> it =  results.iterator();
 	    	   int i=0;
@@ -226,7 +216,7 @@ private double distancebtwObjects(int i, File file, double[] newCoordinates,int 
 	    	   
 	    	   return null;
 	      }
-
+// find distance measures of every object from the query object in the reduces space.
 	private Set<Integer> findSortedDistancesbtwPoints(double[] newCoordiantes) {
 		  
 			HashMap<Integer,Double > results = new HashMap<Integer, Double>();
@@ -237,9 +227,9 @@ private double distancebtwObjects(int i, File file, double[] newCoordinates,int 
 			results = sortByValues(results);
 			
 			return results.keySet();
-			//results
+			
 		}
-
+// sort the hashmap based on values in increasing order.
 	private static HashMap sortByValues(HashMap map) { 
 		       List list = new LinkedList(map.entrySet());
 		       
@@ -258,6 +248,7 @@ private double distancebtwObjects(int i, File file, double[] newCoordinates,int 
 		       return sortedHashMap;
 		  }
 		
+	// calculates euclidean distance between two coordinates
 	private double getEuclideanDistances(double[] newCoordiantes,
 				double[] coordinates2) {
   
@@ -269,61 +260,23 @@ private double distancebtwObjects(int i, File file, double[] newCoordinates,int 
 			return Math.sqrt(distance);
 		}
 
-	private double[] getDistancesWithAllObjects(String filePath) {
-			
-			File folder = new File(DirPath);
-			File searchInput = new File(filePath);
-			
-			double[] result = new double[N];
-			
-			for(int i=0;i<N;i++){
-				
-				result[i] = getDistance(i,searchInput);
-			
-			}
-			
-			return result;
-		}
 
 	private double getDistance(int i, int i2)  {
 
-		//if(computed(String.valueOf(i)+"-"+String.valueOf(i2)) >=0 ||computed(String.valueOf(i2)+"-"+String.valueOf(i))>=0)
-			
-		/*	
-		double sim=0;
-		try {
-			sim = SimilarityObj.getFileSimilarity(files.get(i).getAbsolutePath(), files.get(i2).getAbsolutePath());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		if(i==i2)
-			return 0;
-		else if(sim==0)
-			return Double.MAX_VALUE;
-		else
-			return 1/sim;*/
 		if(i==i2)
 			return 0;
 		else
 			return i<i2?distanceMatrix[i][i2]:distanceMatrix[i2][i];
 		}
 	
-	/*private double computed(String string) {
-		// TODO Auto-generated method stub
-		if(distancemeasures.containsKey(string))
-			return distancemeasures.get(string);
-		else 
-			return -1;
-	}*/
 
 	private double getDistance(int i, File file)  {
 
 		
 		double sim=0;
 		try {
-			sim = SimilarityObj.getFileSimilarity(files.get(i).getAbsolutePath(), file.getAbsolutePath());
+						
+			 sim  = sWrapper.getSimilarityForFiles(option, files.get(i).getAbsolutePath(), file.getAbsolutePath());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -335,23 +288,17 @@ private double distancebtwObjects(int i, File file, double[] newCoordinates,int 
 					return 1/sim;
 		}
 	
-	public double round(double value, int places) {
-	    if (places < 0) throw new IllegalArgumentException();
-
-	    BigDecimal bd = new BigDecimal(value);
-	    bd = bd.setScale(places, RoundingMode.HALF_UP);
-	    return bd.doubleValue();
-	}	
+	
 	
 	public static void main(String[] args) {
 			
 			FastMap fm;
 			try {
-				fm = new FastMap(4, "/home/akshay/inputDir","LocationMatrix.csv");
+				fm = new FastMap(8, "/home/akshay/Desktop/phase2/wordfiles",6);
 			    fm.getReducedSpace();
 			    System.out.println("Mapping Error: " + fm.calculateMappingError());
 			     
-			    fm.getSimilarSimulations("epidemic_word_file.txt", 4, 4);
+			    fm.getSimilarSimulations("/home/akshay/Desktop/phase2/query.csv_word.txt", 8, 4);
 		 
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
