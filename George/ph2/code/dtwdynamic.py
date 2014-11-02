@@ -11,6 +11,9 @@ class DTW(similarity.Similarity) :
        print "#### Checking similarity of", simFile1, " and ", simFile2
        similarity.Similarity.__init__(self, simFile1, simFile2) 
 
+    def setEpiSuffix(self, epiFolder, suffix) :
+       pass       
+
     def similarity(self) : 
 
        numOfStates = len(self._stateF1Dict)

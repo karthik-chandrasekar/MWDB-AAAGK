@@ -11,6 +11,9 @@ class Eucledian(similarity.Similarity) :
         print "#### Checking similarity of", simFile1, " and ", simFile2
         similarity.Similarity.__init__(self, simFile1, simFile2)
 
+    def setEpiSuffix(self, epiFolder, suffix) :
+       pass       
+
     def similarity(self) : 
 
       numOfStates = len(self._stateF1Dict)
@@ -42,7 +45,7 @@ class Eucledian(similarity.Similarity) :
 
     def __repr__(self) :
 
-       return "This is the eucledian obj"
+       return "This is the eucledian obj" + str(self._stateF1Dict)
 
 if __name__ == "__main__" :
 
