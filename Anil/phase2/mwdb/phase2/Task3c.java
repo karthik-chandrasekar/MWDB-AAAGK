@@ -56,6 +56,7 @@ public class Task3c
 				input.append(filefilesimilarity[i][j]);
 				input.append(",");
 			}
+			input.append("\n");
 		}
 		String output = input.toString().trim();
 		swriter.write(output);
@@ -68,6 +69,7 @@ public class Task3c
 		 System.out.println("Calculating SVD function in matlab");
 		 //set matlab path
 		 proxy.eval(Task3.matlab_path);
+		 proxy.setVariable("r", r);
 		 proxy.eval("final_result = svdcalc_file_file(r)");
 		 proxy.setVariable("r", r);
 		 MatlabTypeConverter obj = new MatlabTypeConverter(proxy);
@@ -75,7 +77,7 @@ public class Task3c
 		 double[][] temp = obj.getNumericArray("final_result").getRealArray2D();
 		 for(int l=0;l<r;l++)
 		 {
-		 System.out.println("Laten symantic - "+l); 
+		 System.out.println("Latent symantic - "+l); 
 		 for(int i=0;i<temp[l].length/2;i++)
 			{
 				System.out.println(fileIndexMap.get(temp[l][i+temp[l].length/2])+" --> "+temp[l][i]);

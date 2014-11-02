@@ -8,6 +8,15 @@ import java.io.InputStreamReader;
 
 public class SimilarityWrapper {
 
+	private SimilarityGenerator kobj;
+	private Task1_c_d_e aobj;
+	
+	
+	public SimilarityWrapper() throws Exception{
+		kobj = new SimilarityGenerator(Task3.location_file_path);
+		aobj = new Task1_c_d_e();
+	}
+	
 	public double getSimilarityForFiles(int option, String f1, String f2) throws Exception{
 		double similarity = 0;
 		if(option == 1 ){
@@ -36,20 +45,13 @@ public class SimilarityWrapper {
 		    p.destroy();
 			similarity = Double.parseDouble(s);
 		}
-//		if(option.equals("1") ){
-//			//task 1c
-//			
-//		}
-//		if(option.equals("1") ){
-//			//task 1d
-//			
-//		}
-//		if(option.equals("1") ){
-//			//task 1e
-//			
-//		}
+
+		else if(option == 3 || option == 4 || option == 5){
+			similarity = aobj.compareFiles(f1, f2);
+		}
+		
 		else if(option == 6 || option == 7 || option == 8){
-			SimilarityGenerator kobj = new SimilarityGenerator(Task3.location_file_path);
+			
 			similarity = kobj.getFileSimilarity(f1,f2); 
 		}
 		return similarity;		
