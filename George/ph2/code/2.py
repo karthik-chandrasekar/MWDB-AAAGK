@@ -27,6 +27,9 @@ if __name__ == "__main__" :
                   "Weighted" : ["Weighted", "Computes the weighted similarity ", simheat.SimHeatMap(), shellrunner.ShellRunner("java -jar input/karthik.jar input/LocationMatrix.csv"), "_word.txt"],
                   "WeightedDiff" : ["WeightedDiff", "Computes the weighted similarity of diff files", simheat.SimHeatMap(), shellrunner.ShellRunner("java -jar input/karthik.jar input/LocationMatrix.csv"), "_word.txt_diff"],
                   "WeightedAvg" : ["WeightedAvg", "Computes the weighted similarity of avg files", simheat.SimHeatMap(), shellrunner.ShellRunner("java -jar input/karthik.jar input/LocationMatrix.csv"), "_word.txt_avg"],
+                  "Binary" : ["Binary", "Computes the similarity using binary vector", simheat.SimHeatMap(), shellrunner.ShellRunner("java -jar input/aneesh.jar"), "_word.txt"],
+                  "BinaryAvg" : ["BinaryAvg", "Computes the similarity of Average Files using binary vector", simheat.SimHeatMap(), shellrunner.ShellRunner("java -jar input/aneesh.jar"), "_word.txt_avg"],
+                  "BinaryDiff" : ["BinaryDiff", "Computes the weighted similarity of avg files", simheat.SimHeatMap(), shellrunner.ShellRunner("java -jar input/aneesh.jar"), "_word.txt_diff"],
     }
 
     def metCodes() :
