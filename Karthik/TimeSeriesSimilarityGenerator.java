@@ -236,7 +236,7 @@ class SimilarityGenerator
         collectWords(fileNameTwo, fileTwoWordList); 
         fileSimilarity = constructAMatrix(fileOneWordList, fileTwoWordList);    
         fileSimilarity = fileSimilarity / ((fileOneWordList.size() * fileTwoWordList.size()));
-        System.out.println(fileSimilarity);
+        //System.out.println(fileSimilarity);
         return fileSimilarity;
     }
 }
