@@ -17,11 +17,12 @@ import matlabcontrol.MatlabConnectionException;
 import matlabcontrol.MatlabInvocationException;
 import matlabcontrol.MatlabProxy;
 import matlabcontrol.MatlabProxyFactory;
+import matlabcontrol.extensions.MatlabTypeConverter;
 
 public class Task3d {
 	
 	public static HashMap<String, Integer> featureIndexMap = new HashMap<String,Integer>();
-	public static HashMap<Integer,String> fileIndexMap = new HashMap<Integer, String>();
+	public static HashMap<Double,String> fileIndexMap = new HashMap<Double, String>();
 	private static final Charset charset = Charset.forName("ISO-8859-1");
 //	private static String pathtofolder = "E:\\MWDB\\sampledata_P1_F14\\sampledata_P1_F14\\Epidemic Simulation Datasets_2\\exec13\\epidemic_word_files";
 	private static String pathtofolder = "E:\\MWDB\\Anil_Kuncham_MWDB_Phase1\\output\\Epidemic Simulation Datasets_50\\epidemic_word_files";
@@ -137,22 +138,18 @@ public class Task3d {
 	
 	
 	
-	public static void doSVDSearch() throws MatlabInvocationException{
-//		String input = "";
-//		do{
-//		input = "";
-//		System.out.print("Enter input file path and filename : ");
-//		Scanner in = new Scanner(System.in);
-//		input = in.nextLine();
-//		inputQueryFolder = input;
-		proxy.eval(matlab_path);
-		proxy.eval("res = SVDSearch()");
+	public static void doSVDSearch(Integer r, Integer k) throws MatlabInvocationException{
+		//MatlabTypeConverter obj = new MatlabTypeConverter(proxy);
+		proxy.eval(Task3.matlab_path);
+		proxy.setVariable("r", r);
+		proxy.setVariable("k", k);
+		proxy.eval("res = SVDSearch(r,k)");
 		double[] results= (double[]) proxy.getVariable("res");
+		System.out.println("task 3a fileindex size"+fileIndexMap.size());
 		for(int i=0;i<results.length/2;i++)
 		{
-			System.out.println(fileIndexMap.get((int)(results[i+results.length/2]))+"->"+results[i]);
+			System.out.println(fileIndexMap.get(results[i+results.length/2])+"->"+results[i]);
 		}
-//		}while(input.equals("none"));
 	}
 	
 //	public static void main(String args[]) throws MatlabConnectionException, IOException, MatlabInvocationException

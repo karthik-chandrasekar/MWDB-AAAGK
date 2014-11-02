@@ -16,7 +16,7 @@ import matlabcontrol.MatlabProxyFactory;
 public class Task3e {
 	
 	public static HashMap<String, Integer> featureIndexMap = new HashMap<String,Integer>();
-	public static HashMap<Integer,String> fileIndexMap = new HashMap<Integer, String>();
+	public static HashMap<Double,String> fileIndexMap = new HashMap<Double, String>();
 	private static final Charset charset = Charset.forName("ISO-8859-1");
 //	private static String pathtofolder = "E:\\MWDB\\sampledata_P1_F14\\sampledata_P1_F14\\Epidemic Simulation Datasets_2\\exec13\\epidemic_word_files";
 	private static String pathtofolder = "E:\\MWDB\\Anil_Kuncham_MWDB_Phase1\\output\\Epidemic Simulation Datasets_50\\epidemic_word_files";
@@ -89,14 +89,14 @@ public class Task3e {
 		swriter.close();
 	}
 	
-	public void doLDASearch() throws MatlabInvocationException
+	public void doLDASearch(Integer k) throws MatlabInvocationException
 	{
-		 proxy.eval(matlab_path);
-		 proxy.eval("res = LDASearch()");
+		 proxy.eval(Task3.matlab_path);
+		 proxy.eval("res = LDASearch(k)");
 		 double[] results= (double[]) proxy.getVariable("res");
 		 for(int i=0;i<results.length/2;i++)
 		 {
-			 System.out.println(fileIndexMap.get((int)(results[i+results.length/2]))+"->"+results[i]);
+			 System.out.println(fileIndexMap.get(results[i+results.length/2])+"->"+results[i]);
 		 }
 	}
 }

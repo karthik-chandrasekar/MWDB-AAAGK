@@ -1,6 +1,7 @@
 package mwdb.phase2;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
@@ -15,11 +16,13 @@ import matlabcontrol.MatlabConnectionException;
 import matlabcontrol.MatlabInvocationException;
 import matlabcontrol.MatlabProxy;
 import matlabcontrol.MatlabProxyFactory;
+import matlabcontrol.extensions.MatlabNumericArray;
+import matlabcontrol.extensions.MatlabTypeConverter;
 
 public class Task3b 
 {
 	public static HashMap<String, Integer> featureIndexMap = new HashMap<String,Integer>();
-	public static HashMap<Integer,String> fileIndexMap = new HashMap<Integer, String>();
+	public static HashMap<Double,String> fileIndexMap = new HashMap<Double, String>();
 	private static final Charset charset = Charset.forName("ISO-8859-1");
 //	private static String pathtofolder = "E:\\MWDB\\sampledata_P1_F14\\sampledata_P1_F14\\Epidemic Simulation Datasets_2\\exec13\\epidemic_word_files";
 	private static String pathtofolder = "E:\\MWDB\\Anil_Kuncham_MWDB_Phase1\\output\\Epidemic Simulation Datasets_50\\epidemic_word_files";
@@ -99,7 +102,7 @@ public class Task3b
 	{	
 		System.out.println("Constructing feature space..");
 		for(int s=0;s<file_list.length;s++){
-			fileIndexMap.put(s+1, file_list[s].getName());
+			fileIndexMap.put((double) (s+1), file_list[s].getName());
 		}
 //		File folder = new File(pathtofolder);
 //		File[] file_list = folder.listFiles();
@@ -138,17 +141,26 @@ public class Task3b
 	    System.out.println("Done");
 	}
 	
-	public static void calculateLDA() throws MatlabConnectionException, MatlabInvocationException
+	public void calculateLDA(Integer k) throws MatlabConnectionException, MatlabInvocationException, FileNotFoundException
 	{
-		System.out.println("Invoking LDA");
+		 System.out.println("Executing LDA");
+		 PrintWriter swriter = new PrintWriter("C:\\Users\\ANIL\\Documents\\MATLAB\\ldaoutput.csv");	
 		 //set matlab path
 //		 String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
-		 proxy.eval(matlab_path);
-		 proxy.eval("calcldanew()");
-//		 double[] bands= (double[]) proxy.getVariable("res");
-//		 proxy.disconnect();
-//		 doLDASearch();
-		 System.out.println("Matlab execution done");
+		 proxy.eval(Task3.matlab_path);
+		 proxy.setVariable("k", k);
+		 MatlabTypeConverter obj = new MatlabTypeConverter(proxy);
+		 proxy.eval("final_result = calcldanew(k)");
+		 double[][] temp = obj.getNumericArray("final_result").getRealArray2D();
+		 for(int l=0;l<k;l++)
+		 {
+			System.out.println("Topic - "+l); 
+			for(int i=0;i<temp[l].length/2;i++)
+			{
+				System.out.println(fileIndexMap.get(temp[l][i+temp[l].length/2])+" --> "+temp[l][i]);
+				swriter.write(fileIndexMap.get(temp[l][i+temp[l].length/2])+" --> "+temp[l][i]);
+			}
+		 }
 	}
 	
 //	public static void Main() throws MatlabConnectionException, IOException{
