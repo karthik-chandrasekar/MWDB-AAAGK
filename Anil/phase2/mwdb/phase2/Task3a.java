@@ -17,11 +17,13 @@ import matlabcontrol.MatlabConnectionException;
 import matlabcontrol.MatlabInvocationException;
 import matlabcontrol.MatlabProxy;
 import matlabcontrol.MatlabProxyFactory;
+import matlabcontrol.extensions.MatlabNumericArray;
+import matlabcontrol.extensions.MatlabTypeConverter;
 
 public class Task3a {
 
 	public static HashMap<String, Integer> featureIndexMap = new HashMap<String,Integer>();
-	public static HashMap<Integer,String> fileIndexMap = new HashMap<Integer, String>();
+	public static HashMap<Double,String> fileIndexMap = new HashMap<Double, String>();
 	private static final Charset charset = Charset.forName("ISO-8859-1");
 //	private static String pathtofolder = "E:\\MWDB\\sampledata_P1_F14\\sampledata_P1_F14\\Epidemic Simulation Datasets_2\\exec13\\epidemic_word_files";
 	private static String pathtofolder = "E:\\MWDB\\Anil_Kuncham_MWDB_Phase1\\output\\Epidemic Simulation Datasets_50\\epidemic_word_files";
@@ -38,8 +40,9 @@ public class Task3a {
 	{	
 		System.out.println("constructing feature space..");
 		for(int s=0;s<file_list.length;s++){
-			fileIndexMap.put(s+1, file_list[s].getName());
+			fileIndexMap.put((double) (s+1), file_list[s].getName());
 		}
+		System.out.println("FileIndexMap size"+fileIndexMap.size());
 //		File folder = new File(pathtofolder);
 //		File[] file_list = folder.listFiles();
 		int index=1;
@@ -80,8 +83,6 @@ public class Task3a {
 	public void constructFeatureVectorsSVD() throws IOException{ 
 		System.out.println("Constructing SVD input");
 		PrintWriter swriter = new PrintWriter("C:\\Users\\ANIL\\Documents\\MATLAB\\svdinput.csv");
-		File folder = new File(pathtofolder);
-		File[] file_list = folder.listFiles();
 		for(File file:file_list){
 			HashMap<Integer, Integer> fvectorMap = new HashMap<Integer,Integer>();
 			List<String> rows = Files.readAllLines(file.toPath(), charset);
@@ -139,32 +140,29 @@ public class Task3a {
 		System.out.println("Done");
 	}
 	
-	public void calculateSVD() throws MatlabConnectionException, MatlabInvocationException
+	public void calculateSVD(Integer r) throws MatlabConnectionException, MatlabInvocationException, FileNotFoundException
 	{
-		System.out.println("Invoking SVD function in Matlab");	
+		 PrintWriter swriter = new PrintWriter("C:\\Users\\ANIL\\Documents\\MATLAB\\svdoutput.csv");
+		 System.out.println("Executing SVD function in Matlab");	
 		 //set matlab path
-//		 String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
-		 proxy.eval(matlab_path);
-		 proxy.eval("svdcalc()");
-//		 double[] bands= (double[]) proxy.getVariable("res");
-//		 proxy.disconnect();
-//		 doSVDSearch();
-		 System.out.println("SVD execution done");
-//		 proxy.disconnect();
+		 proxy.eval(Task3.matlab_path);
+		 proxy.setVariable("r", r);
+		 MatlabTypeConverter obj = new MatlabTypeConverter(proxy);
+		 proxy.eval("final_result = svdcalc(r)");
+		 double[][] temp = obj.getNumericArray("final_result").getRealArray2D();
+		 for(int l=0;l<r;l++)
+		 {
+			System.out.println("Laten symantic - "+l); 
+		 for(int i=0;i<temp[l].length/2;i++)
+			{
+				System.out.println(fileIndexMap.get(temp[l][i+temp[l].length/2])+" --> "+temp[l][i]);
+				swriter.write(fileIndexMap.get(temp[l][i+temp[l].length/2])+" --> "+temp[l][i]);
+			}
+		 }
 	}
 	
-	public static void calculateLDA() throws MatlabConnectionException, MatlabInvocationException{
-
-		 //set matlab path
-//		 String path = "cd(\'C:\\Users\\ANIL\\Documents\\MATLAB\\\')";
-		 proxy.eval(matlab_path);
-		 proxy.eval("calcldanew()");
-//		 double[] bands= (double[]) proxy.getVariable("res");
-//		 proxy.disconnect();
-//		 doLDASearch();
-	}
-	
-	public static void doSVDSearch() throws MatlabInvocationException{
+	public static void doSVDSearch() throws MatlabInvocationException, FileNotFoundException{
+		
 		String input = "";
 		do{
 		input = "";
@@ -178,29 +176,32 @@ public class Task3a {
 		for(int i=0;i<results.length/2;i++)
 		{
 			System.out.println(fileIndexMap.get((int)(results[i+results.length/2]))+"->"+results[i]);
+			
 		}
 		}while(input.equals("none"));
 	}
 	
 	
-	public static void doLDASearch() throws MatlabInvocationException{
-		String input = "";
-		do{
-		input = "";
-		System.out.print("Enter input file path and filename : ");
-		Scanner in = new Scanner(System.in);
-		input = in.nextLine();
-		inputQueryFolder = input;
-		 proxy.eval(matlab_path);
-		 proxy.eval("res = LDASearch()");
-		 double[] results= (double[]) proxy.getVariable("res");
-		 for(int i=0;i<results.length/2;i++)
-		 {
-			 System.out.println(fileIndexMap.get((int)(results[i+results.length/2]))+"->"+results[i]);
-		 }
-		}while(input.equals("none"));
-	}
-	
+//	public static void doLDASearch() throws MatlabInvocationException, FileNotFoundException{
+//		
+//		String input = "";
+//		do{
+//		input = "";
+//		System.out.print("Enter input file path and filename : ");
+//		Scanner in = new Scanner(System.in);
+//		input = in.nextLine();
+//		inputQueryFolder = input;
+//		 proxy.eval(matlab_path);
+//		 proxy.eval("res = LDASearch()");
+//		 double[] results= (double[]) proxy.getVariable("res");
+//		 for(int i=0;i<results.length/2;i++)
+//		 {
+//			 System.out.println(fileIndexMap.get((int)(results[i+results.length/2]))+"->"+results[i]);
+//			 
+//		 }
+//		}while(input.equals("none"));
+//	}
+//	
 	
 	public void constructFeatureVectorsQuerySVD() throws IOException{ 
 		PrintWriter swriter = new PrintWriter("C:\\Users\\ANIL\\Documents\\MATLAB\\svdqueryinput.csv");
@@ -322,10 +323,7 @@ public class Task3a {
 		swriter.close();
 	}
 	
-	private double getFileFileSimilarity(File file, File file2) {
-		// TODO Auto-generated method stub
-		return 1.5;
-	}
+	
 	
 	private void constructLDAInput() throws IOException{
 		 
@@ -450,14 +448,6 @@ public class Task3a {
 		swriter.close();
 	}
 
-	public void constructSimilaritySimilarityMatrixQuery(){
-		
-	}
-	
-	
-	public void setInputFields(){
-		
-	}
 	
 //	public static void main(String args[]) throws IOException, MatlabConnectionException, MatlabInvocationException{
 //		factory = new MatlabProxyFactory();
