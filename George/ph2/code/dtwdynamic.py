@@ -90,5 +90,6 @@ if __name__ == "__main__" :
     simFile2 = sys.argv[2]
 
     print "#### Checking similarity of", simFile1, " and ", simFile2
-    dtw = DTW(simFile1, simFile2) 
+    dtw = DTW() 
+    dtw.refresh(simFile1, simFile2)
     print dtw.similarity()
