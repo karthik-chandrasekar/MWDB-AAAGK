@@ -36,7 +36,7 @@ class SimilarityGenerator
     }
     
     
-    public double getWordMatch(List<String> rowWord, List<String> colWord)
+    public double getWindowMatch(List<String> rowWord, List<String> colWord)
     {
         // Find the common matching matching characters with same index in given window of the words
         int matchCount = 0; //Total number of characters matching in window between two words
@@ -158,7 +158,7 @@ class SimilarityGenerator
         double stateMatch = 0.0;
         double timeMatch = 0.0;
         
-        windowMatch = getWordMatch(rowWord, colWord);
+        windowMatch = getWindowMatch(rowWord, colWord);
         similarity += windowMatch;
         //if (windowMatch != 0.0){System.out.println("WordMatch " + similarity);}
         stateMatch = getStateMatch(rowWord, colWord);
@@ -254,7 +254,7 @@ public class TimeSeriesSimilarityGenerator {
          String locationFile = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
          SimilarityGenerator simObj = new SimilarityGenerator(locationFile);
          String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFile";
-         String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFile";
+         String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileAvg";
          simObj.getFileSimilarity(fileNameOne, fileNameTwo);
     }
 }
