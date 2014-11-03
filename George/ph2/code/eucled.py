@@ -8,7 +8,7 @@ class Eucledian(similarity.Similarity) :
 
     def refresh(self, simFile1, simFile2) :
 
-        print "#### Checking similarity of", simFile1, " and ", simFile2
+#        print "#### Checking similarity of", simFile1, " and ", simFile2
         similarity.Similarity.__init__(self, simFile1, simFile2)
 
     def setEpiSuffix(self, epiFolder, suffix) :
@@ -53,7 +53,7 @@ if __name__ == "__main__" :
         print "Error Inputs not passsed to the script."
         sys.exit(1)
 
-    print "#### Starting task 1 a."
+ #   print "#### Starting task 1 a."
 
     simFile1 = sys.argv[1]
     simFile2 = sys.argv[2]
