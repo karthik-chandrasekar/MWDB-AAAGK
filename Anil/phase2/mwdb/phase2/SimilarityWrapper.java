@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Scanner;
 
 public class SimilarityWrapper {
 
@@ -59,6 +60,25 @@ public class SimilarityWrapper {
 	
 	public static void main(String args[]) throws Exception{
 		SimilarityWrapper sw = new SimilarityWrapper();
-		sw.getSimilarityForFiles(1, "E://MWDB//Anil_Kuncham_MWDB_Phase1//output//Epidemic_Simulation_Datasets_50//epidemic_word_files//avgn9.csv", "E://MWDB//Anil_Kuncham_MWDB_Phase1//output//Epidemic_Simulation_Datasets_50//epidemic_word_files//avgn9.csv" );
+		int option = 0;
+		System.out.print("Select a similarity measure : "
+				+"1 - Task 1a\t"
+				+"2 - Task 1b\t"
+				+"3 - Task 1c\t"
+				+"4 - Task 1d\t"
+				+"5 - Task 1e\t"
+				+"6 - Task 1f\t"
+				+"7 - Task 1g\t"
+				+"8 - Task 1h\t");
+		Scanner p = new Scanner(System.in);
+		option = Integer.parseInt(p.nextLine());
+		String f1,f2 = "";
+		System.out.print("Enter File-1 : ");
+		p = new Scanner(System.in);
+		f1 = p.nextLine();
+		System.out.print("Enter File-2 : ");
+		p = new Scanner(System.in);
+		f2 = p.nextLine();
+		sw.getSimilarityForFiles(option,f1,f2 );
 	}
 }
