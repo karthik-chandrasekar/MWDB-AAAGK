@@ -1,10 +1,11 @@
-#print "Going to run a java program"
 import subprocess
 import sys
 import os
-#output = subprocess.check_output(['java', '-jar', 'inputs/hello.jar'])
-#print incOut
 
+"""
+Wraper for running programs on the shell. 
+Also adds the prefix to the files so as to use the naming convention.
+"""
 class ShellRunner(object) :
 
     def __init__(self, commandLine) :
@@ -15,22 +16,23 @@ class ShellRunner(object) :
 
         self._simFile1 = simFile1
         self._simFile2 = simFile2
-        self._commandLine.append(os.path.abspath(self.getEpiFileName(simFile1)))
-        self._commandLine.append(os.path.abspath(self.getEpiFileName(simFile2)))
 
     def getEpiFileName(self, simFile1) :   
  
         folder, simFile = os.path.split(simFile1)       
-        return os.path.join(self._epiFolder, simFile + self._suffix)
+        return os.path.join(self._epiFolder, self._prefix + simFile)
 
     def similarity(self) :
-        self._output = subprocess.check_output(self._commandLine)
-        print self._commandLine
+        commandLine = list(self._commandLine)
+        commandLine.append(os.path.abspath(self.getEpiFileName(self._simFile1)))
+        commandLine.append(os.path.abspath(self.getEpiFileName(self._simFile2)))
+        print commandLine
+        self._output = subprocess.check_output(commandLine)
         return self._output
     
-    def setEpiSuffix(self, epiFolder, suffix) :
+    def setEpiSuffix(self, epiFolder, prefix) :
         self._epiFolder = epiFolder
-        self._suffix    = suffix
+        self._prefix    = prefix
  
     def __repr__(self) :
  
@@ -55,4 +57,4 @@ if __name__ == "__main__" :
     shellRunner.setEpiSuffix(epiFolder, "_word.txt")
     shellRunner.refresh(simFile1, simFile2) 
     print shellRunner.similarity()
-    print shellRunner
+   # print shellRunner

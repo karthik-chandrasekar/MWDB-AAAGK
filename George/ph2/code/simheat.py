@@ -3,7 +3,7 @@ import parsecsv
 import math
 
 """
-Given a similarity measure find k - 1 similar files. 
+Draws the Heat Map when a csv file is passed to it. 
 """
 class SimHeatMap(object) :
 
@@ -25,7 +25,10 @@ class SimHeatMap(object) :
         self._heatPoints = self.formHeatPoints()
         hm = heatmap.HeatMap(self._heatPoints, self._maxVal, self._maxIter, self._noOfStates, self._window, [], [])
         hm.draw()
-
+   
+    """
+    Saves the heat points from the stored dictionary
+    """
     def formHeatPoints(self) :
 
        heatPoints = []    
@@ -37,7 +40,10 @@ class SimHeatMap(object) :
                #print "X =", time, "Y= ", y, "Val =", self._stateEpiDict[stateName][time][0]
                heatPoints.append([int(time), y, self._stateEpiDict[stateName][time][0]])
        return heatPoints
-      
+     
+    """
+    Max is needed for the colormapper. 
+    """
     def getMax(self) :
  
        for stateName in self._stateEpiDict :
