@@ -82,6 +82,7 @@ if __name__ == "__main__" :
     print "\n Loading query file", query
     heatObj.refresh(query)
     print "\n Loading ", k , " most similar sim files to query", query
+ #   print simData
     simData = sortSimData(simData)
     for rank, data in enumerate(simData[0:int(k)]) :
         print "\n Loading File " + str(data[1]) + " Rank =" + str(rank + 1) + \

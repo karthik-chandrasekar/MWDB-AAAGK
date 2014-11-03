@@ -16,8 +16,6 @@ class ShellRunner(object) :
 
         self._simFile1 = simFile1
         self._simFile2 = simFile2
-        self._commandLine.append(os.path.abspath(self.getEpiFileName(simFile1)))
-        self._commandLine.append(os.path.abspath(self.getEpiFileName(simFile2)))
 
     def getEpiFileName(self, simFile1) :   
  
@@ -25,7 +23,11 @@ class ShellRunner(object) :
         return os.path.join(self._epiFolder, self._prefix + simFile)
 
     def similarity(self) :
-        self._output = subprocess.check_output(self._commandLine)
+        commandLine = list(self._commandLine)
+        commandLine.append(os.path.abspath(self.getEpiFileName(self._simFile1)))
+        commandLine.append(os.path.abspath(self.getEpiFileName(self._simFile2)))
+        print commandLine
+        self._output = subprocess.check_output(commandLine)
         return self._output
     
     def setEpiSuffix(self, epiFolder, prefix) :
