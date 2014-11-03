@@ -4,9 +4,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-
+/**
+ * Similarity generator to find out similarity between two given files
+ * @author karthikchandrasekar
+ *
+ */
 class SimilarityGenerator
 {
     HashMap<String, List<String>> adjacencyHashMap;
@@ -20,9 +22,11 @@ class SimilarityGenerator
     
     public void collectWords(String fileName, List<List<String>> wordList) throws FileNotFoundException
     {
+        //Collect the words from the given input files and form word list 
+        
         List<String> tempList;
 
-        //1.csv,US-AK,2012-01-01 12:00:00,0.28816285436749933,0.28816285436749933,0.28816285436749933,0.28816285436749933,0.28816285436749933
+        //Data Format - 1.csv,US-AK,2012-01-01 12:00:00,0.28816285436749933,0.28816285436749933,0.28816285436749933,0.28816285436749933,0.28816285436749933
         File inputFile = new File(fileName);
         Scanner input = new Scanner(inputFile);
         
@@ -39,11 +43,14 @@ class SimilarityGenerator
     
     public double getWindowMatch(List<String> rowWord, List<String> colWord)
     {
-        // Find the common matching matching characters with same index in given window of the words
-        int matchCount = 0; //Total number of characters matching in window between two words
+        /** Find the common matching matching characters with same index in given window of the words
+         *  Return the similarity value based on the number of matches
+         *  Return 0 when the match is less than half the length of the max of two words
+         */
+        int matchCount = 0; 
         int totalLen = 0;
         double similarity = 0;
-        int windowMatchBoost = 3; //
+        int windowMatchBoost = 1; 
         int matchThreshold = 0;
         int iterationCount = 0;
         
@@ -54,7 +61,6 @@ class SimilarityGenerator
             {
                 continue;
             }
-            //System.out.println(rowWord.get(i) + "  " + colWord.get(i));
             if(rowWord.get(i).equals(colWord.get(i)))
             {
                 matchCount ++;
@@ -66,7 +72,7 @@ class SimilarityGenerator
         matchThreshold = totalLen/2;
         if (matchCount > matchThreshold)
         {
-            similarity = ((double)1/(double)totalLen) * matchCount * windowMatchBoost;
+            similarity = ((double)1/(double)totalLen*2) * matchCount * windowMatchBoost;
         }
         else
         {
@@ -78,7 +84,9 @@ class SimilarityGenerator
     
     public HashMap<String, List<String>> formAdjacencyHashMap(String inputFilePath) throws Exception
     {
-        //Parse adjacency matrix and form a state, adjacent states hash map
+        /**Parse adjacency matrix and form a state, adjacent states hash map
+         * Also form a list of state to identify state index position
+         */
 
         HashMap<String, List<String>> adjacencyHashMap = new HashMap<String, List<String>>();
         List<String> headerList;
@@ -114,10 +122,9 @@ class SimilarityGenerator
     
     public boolean isNeighbor(String stateOne, String stateTwo)
     {
-        //System.out.println(stateOne);
-        //System.out.println(stateTwo);
+        // Check if the given two states are neighbors
+        
         if (stateOne==null || stateTwo==null)return false;
-        //System.out.println("State one" + stateOne + " State Two " + stateTwo);
         
         return adjacencyHashMap.get(stateOne).contains(stateTwo);
     }
@@ -125,8 +132,8 @@ class SimilarityGenerator
     public double getStateMatch(List<String> listOne, List<String> listTwo)
     {
         /*** Check if the state is equal between two given lists. State is located in index position 1 of the given lists. 
-             If the state is same give similarity as 1
-             If the states are neighbors assign similarity as 0.5
+             If the state is same give similarity as 0.3
+             If the states are neighbors assign similarity as 0.15
         ***/
         
         double similarity = 0.0;
@@ -136,11 +143,11 @@ class SimilarityGenerator
         
         if(stateOne.equals(stateTwo))
         {
-            similarity = 1;
+            similarity = 0.3;
         }
         else if(isNeighbor(stateOne, stateTwo))
         {
-            similarity = 0.5;
+            similarity = 0.15;
         }
         return similarity;
     }
@@ -148,6 +155,10 @@ class SimilarityGenerator
     
     double getTimeMatch(List<String> listOne, List<String> listTwo)
     {
+        /**Check time match between two words and add the boost if they are same. 
+         * Time is present in the index position 2 of the string list
+         */
+        
         double similarity = 0.0;
         
         if(listOne.get(2).equals(listTwo.get(2)))
@@ -158,6 +169,8 @@ class SimilarityGenerator
     
     public double getWordSimilarity(List<String> rowWord, List<String> colWord)
     {   
+        //Generate a word-word similarity for the given two words 
+        
         double similarity = 0.0;
         double windowMatch = 0.0;
         double stateMatch = 0.0;
@@ -165,14 +178,10 @@ class SimilarityGenerator
         
         windowMatch = getWindowMatch(rowWord, colWord);
         similarity += windowMatch;
-        //if (windowMatch != 0.0){System.out.println("WordMatch " + similarity);}
         stateMatch = getStateMatch(rowWord, colWord);
         similarity += stateMatch;
-        //if (stateMatch!= 0.0){System.out.println("StateMatch " + similarity);}
         timeMatch = getTimeMatch(rowWord, colWord);
-        similarity += timeMatch;
-        //if (timeMatch != 0.0){System.out.println("TimeMatch " + timeMatch);}
-        
+        similarity += timeMatch;        
         return similarity;
     }
     
@@ -183,8 +192,6 @@ class SimilarityGenerator
         int colSize =  fileTwoWordList.size();
         List<String> rowWord, colWord;
         double fileSimilarity = 0 ;
-        //System.out.println(adjacencyHashMap);
-
         
         for(int i=0; i<rowSize; i++)
         {
@@ -195,10 +202,6 @@ class SimilarityGenerator
                 fileSimilarity += getWordSimilarity(rowWord, colWord);
             }
         }
-        
-    
-        //System.out.println("Max similarity " + maxSimilarity);
-        //System.out.println("New Max Similarity" + newMaxSimilarity);
         
         return fileSimilarity;
     }
@@ -233,6 +236,8 @@ class SimilarityGenerator
     
     public double getFileSimilarity(String fileNameOne, String fileNameTwo) throws Exception
     {
+        //Generate the similarity for the given two files
+        
         List<List<String>> fileOneWordList = new ArrayList<List<String>>();
         List<List<String>> fileTwoWordList = new ArrayList<List<String>>();
         double fileSimilarity;
@@ -242,27 +247,17 @@ class SimilarityGenerator
         fileSimilarity = constructAMatrix(fileOneWordList, fileTwoWordList);    
         fileSimilarity = fileSimilarity / ((fileOneWordList.size() * fileTwoWordList.size()));
         //System.out.println(fileSimilarity);
-        //System.out.println("File one word size" + fileOneWordList.size()  + "File two word size" + fileTwoWordList.size());
         return fileSimilarity;
     }
 }
 
 public class TimeSeriesSimilarityGenerator {
     public static void main(String args[]) throws Exception
-    {
-         //Logger logger = Logger.getLogger("MyLogger");
-         FileHandler fh;
-
-         //fh = new FileHandler("TimeSeriesSimilarityGenerator.log");
-         //logger.addHandler(fh);
-         //logger.info("Logger starts");
-         
+    {        
          String locationFile = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
          SimilarityGenerator simObj = new SimilarityGenerator(locationFile);
-         //String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFile";
-         //String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileAvg";
-         String fileNameOne = "/Users/karthikchandrasekar/Downloads/epidemic_word_files/avgn1.csv";
-         String fileNameTwo = "/Users/karthikchandrasekar/Downloads/epidemic_word_files/avgn2.csv";
+         String fileNameOne = "/Users/karthikchandrasekar/Downloads/epidemic_word_files/avgn2.csv";
+         String fileNameTwo = "/Users/karthikchandrasekar/Downloads/epidemic_word_files/avgn1.csv";
          simObj.getFileSimilarity(fileNameOne, fileNameTwo);
     }
 }
