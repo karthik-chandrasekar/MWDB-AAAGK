@@ -21,16 +21,15 @@ class ShellRunner(object) :
     def getEpiFileName(self, simFile1) :   
  
         folder, simFile = os.path.split(simFile1)       
-        return os.path.join(self._epiFolder, simFile + self._suffix)
+        return os.path.join(self._epiFolder, self._prefix + simFile)
 
     def similarity(self) :
         self._output = subprocess.check_output(self._commandLine)
-        print self._commandLine
         return self._output
     
-    def setEpiSuffix(self, epiFolder, suffix) :
+    def setEpiSuffix(self, epiFolder, prefix) :
         self._epiFolder = epiFolder
-        self._suffix    = suffix
+        self._prefix    = prefix
  
     def __repr__(self) :
  
@@ -55,4 +54,4 @@ if __name__ == "__main__" :
     shellRunner.setEpiSuffix(epiFolder, "_word.txt")
     shellRunner.refresh(simFile1, simFile2) 
     print shellRunner.similarity()
-    print shellRunner
+   # print shellRunner
