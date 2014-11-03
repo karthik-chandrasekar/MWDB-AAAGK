@@ -61,7 +61,7 @@ end;
 % k = str2num(k);
 
 
-[output,Index] = sort(Sim,'descend');
+[output,index] = sort(Sim,'descend');
 [outrows, outcols] = size(output);
 for f=1:outcols
     temp1(f) = output(1,f);

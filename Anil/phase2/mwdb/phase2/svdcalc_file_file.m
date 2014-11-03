@@ -9,9 +9,9 @@ disp('latent sematics matrix size')
 [iSr, iSc] = size(S);
 [iVr, iVc] = size(V);
 % disp(diag(S));
-save 'Uf3c_matrix' U;
-save 'Sf3c_matrix' S;
-save 'Vf3c_matrix' V;
+save 'U3c_matrix' U;
+save 'S3c_matrix' S;
+save 'V3c_matrix' V;
 for i=1:r
 [output,index] = sort(U(:,i),'descend');
 output = transpose(output);
