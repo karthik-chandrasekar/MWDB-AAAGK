@@ -1,0 +1,33 @@
+RUN COMMAND
+
+javac SimilarityWrapper.java
+
+INPUT
+
+Select a similarity measure : 1f
+
+Enter File 1 - /home/n1.csv
+
+Enter File 2 - /home/n2.csv
+
+OUTPUT:
+
+Similarity value
+
+1.990550795496129
+
+
+
+INPUT
+
+Select a similarity measure : 1g
+
+Enter File 1 - /home/avgn1.csv
+
+Enter File 2 - /home/avgn2.csv
+
+OUTPUT:
+
+Similarity value
+
+1.81316894950932

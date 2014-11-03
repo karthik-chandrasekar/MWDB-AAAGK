@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Scanner;
+
 /**
  * 
  * @author Aneesh
@@ -14,6 +16,23 @@ import java.util.HashSet;
  */
 
 public class Task1_c_d_e {
+	
+	public static void main(String[] args) {
+		Double result = 0.0;
+		String file_1 = args[0];
+		String file_2 = args[1];
+		
+		//Testing variables
+		//String file_1 = "/Users/aneeshu/Desktop/ASU Fall 2014/MWDB/Project 1/Phase 2/epidemic_word_files/Avgn17.csv";
+		//String file_2 = "/Users/aneeshu/Desktop/ASU Fall 2014/MWDB/Project 1/Phase 2/epidemic_word_files/Avgn18.csv";
+		
+		Task1_c_d_e t1 = new Task1_c_d_e();
+			result = t1.compareFiles(file_1,file_2);
+			System.out.println("Similarity Score : " + result);
+			
+		
+	}
+	
 	
 	private String f1,f2;
 	
@@ -43,11 +62,11 @@ public class Task1_c_d_e {
 		f1 = file1;
 		f2 = file2;
 		
-		ArrayList<String> bag = new ArrayList<>();
-		ArrayList<String> bag1 = new ArrayList<>();
-		ArrayList<String> bag2 = new ArrayList<>();
-		ArrayList<String> bagFile1 = new ArrayList<>();
-		ArrayList<String> bagFile2 = new ArrayList<>();
+		ArrayList<String> bag = new ArrayList<String>();
+		ArrayList<String> bag1 = new ArrayList<String>();
+		ArrayList<String> bag2 = new ArrayList<String>();
+		ArrayList<String> bagFile1 = new ArrayList<String>();
+		ArrayList<String> bagFile2 = new ArrayList<String>();
 		HashSet<String> hs = new HashSet<>();
 			  
 		 int simScore = 0; 
@@ -153,9 +172,12 @@ public class Task1_c_d_e {
 			}
 	 
 		} catch (FileNotFoundException e) {
+					
 			e.printStackTrace();
+			System.out.println("Task 1c_d_e : File not found");
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.out.println("Task 1c_d_e : I/O error");
 		} finally {
 			if (br != null) {
 				try {
