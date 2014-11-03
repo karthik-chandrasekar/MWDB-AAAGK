@@ -1,10 +1,11 @@
-#print "Going to run a java program"
 import subprocess
 import sys
 import os
-#output = subprocess.check_output(['java', '-jar', 'inputs/hello.jar'])
-#print incOut
 
+"""
+Wraper for running programs on the shell. 
+Also adds the prefix to the files so as to use the naming convention.
+"""
 class ShellRunner(object) :
 
     def __init__(self, commandLine) :

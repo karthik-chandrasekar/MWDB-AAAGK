@@ -1,6 +1,6 @@
 """
-Parses one line epidemic Simulation File 
-and returns the contents split into objects. 
+Returns the data structure containing the dictionary of the stateNames
+when lines are passed to it. 
 """
 class SimParser(object) :
 

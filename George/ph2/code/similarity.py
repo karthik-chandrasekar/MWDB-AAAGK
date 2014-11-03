@@ -2,7 +2,8 @@ import parsecsv
 
 """
 A general similarity measure has parsing of input files as the work to be
-done. The similarity takes care of  that and converts it into dataStructues.
+done. The similarity takes care of  that and converts it into dataStructues
+used by other classes which saves on access time.
 """
 
 class Similarity(object) :

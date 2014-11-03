@@ -1,5 +1,9 @@
 import similarity
 
+"""
+Extends from Similatity and computes DTW when 2
+sim files are passed.
+"""
 class DTW(similarity.Similarity) :
 
     def __init__(self) :
@@ -8,7 +12,7 @@ class DTW(similarity.Similarity) :
 
     def refresh(self, simFile1, simFile2) :
 
-#       print "#### Checking similarity of", simFile1, " and ", simFile2
+    #  print "#### Checking similarity of", simFile1, " and ", simFile2
        similarity.Similarity.__init__(self, simFile1, simFile2) 
 
     def setEpiSuffix(self, epiFolder, suffix) :
@@ -37,7 +41,11 @@ class DTW(similarity.Similarity) :
            for y in range(N) :
                mat[x][y] = initVal
        return mat
-
+    
+    """
+    Function which computes the minimum value using dynamic programming.
+    Ref. : http://en.wikipedia.org/wiki/Dynamic_time_warping
+    """
     def calcDTW(self, dict1, dict2) :
        
        N = len(dict1) # Assert equal to dict2 in our case.
@@ -62,6 +70,9 @@ class DTW(similarity.Similarity) :
 
         return (time - 1)
 
+    """
+    Creates the eucledian distance matrix for DTW.
+    """
     def getDistMat(self, N, dict1, dict2) :
       
         distMat = []

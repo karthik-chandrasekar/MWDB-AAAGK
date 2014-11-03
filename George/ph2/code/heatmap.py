@@ -4,6 +4,10 @@ import matplotlib.patches as patches
 
 import math
 
+"""
+Draws the heatmap when the heat Points, and max Lengths
+Plots states X iterations
+"""
 class HeatMap(object) :
 
     def __init__(self, heatPoints, maxVal, maxX, maxY, heatLength, markList, highList) :
