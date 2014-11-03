@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 class SimilarityGenerator
 {
     HashMap<String, List<String>> adjacencyHashMap;
+    List<String> statesList = new ArrayList<String>();
     
     public SimilarityGenerator(String inputLocationFile) throws Exception
     {
@@ -40,7 +41,6 @@ class SimilarityGenerator
     {
         // Find the common matching matching characters with same index in given window of the words
         int matchCount = 0; //Total number of characters matching in window between two words
-        int misMatchCount = 0;
         int totalLen = 0;
         double similarity = 0;
         int windowMatchBoost = 3; //
@@ -107,6 +107,7 @@ class SimilarityGenerator
                 count ++;
             }
             adjacencyHashMap.put(header, valueList);
+            statesList.add(header);
         }    
         return adjacencyHashMap;
     }
@@ -116,6 +117,7 @@ class SimilarityGenerator
         //System.out.println(stateOne);
         //System.out.println(stateTwo);
         if (stateOne==null || stateTwo==null)return false;
+        //System.out.println("State one" + stateOne + " State Two " + stateTwo);
         
         return adjacencyHashMap.get(stateOne).contains(stateTwo);
     }
@@ -128,12 +130,15 @@ class SimilarityGenerator
         ***/
         
         double similarity = 0.0;
+        String stateOne = statesList.get(Integer.parseInt(listOne.get(1))-1);
+        String stateTwo = statesList.get(Integer.parseInt(listTwo.get(1))-1);
         
-        if(listOne.get(1).equals(listTwo.get(1)))
+        
+        if(stateOne.equals(stateTwo))
         {
             similarity = 1;
         }
-        else if(isNeighbor(listOne.get(1), listTwo.get(1)))
+        else if(isNeighbor(stateOne, stateTwo))
         {
             similarity = 0.5;
         }
@@ -237,6 +242,7 @@ class SimilarityGenerator
         fileSimilarity = constructAMatrix(fileOneWordList, fileTwoWordList);    
         fileSimilarity = fileSimilarity / ((fileOneWordList.size() * fileTwoWordList.size()));
         //System.out.println(fileSimilarity);
+        //System.out.println("File one word size" + fileOneWordList.size()  + "File two word size" + fileTwoWordList.size());
         return fileSimilarity;
     }
 }
@@ -244,17 +250,19 @@ class SimilarityGenerator
 public class TimeSeriesSimilarityGenerator {
     public static void main(String args[]) throws Exception
     {
-         Logger logger = Logger.getLogger("MyLogger");
+         //Logger logger = Logger.getLogger("MyLogger");
          FileHandler fh;
 
-         fh = new FileHandler("TimeSeriesSimilarityGenerator.log");
-         logger.addHandler(fh);
-         logger.info("Logger starts");
+         //fh = new FileHandler("TimeSeriesSimilarityGenerator.log");
+         //logger.addHandler(fh);
+         //logger.info("Logger starts");
          
          String locationFile = "/Users/karthikchandrasekar/Downloads/LocationMatrix.csv";
          SimilarityGenerator simObj = new SimilarityGenerator(locationFile);
-         String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFile";
-         String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileAvg";
+         //String fileNameOne = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFile";
+         //String fileNameTwo = "/Users/karthikchandrasekar/Desktop/ThirdSem/MWDB/Phase1/EpidemicWordOutput/EpidemicWordFileAvg";
+         String fileNameOne = "/Users/karthikchandrasekar/Downloads/epidemic_word_files/avgn1.csv";
+         String fileNameTwo = "/Users/karthikchandrasekar/Downloads/epidemic_word_files/avgn2.csv";
          simObj.getFileSimilarity(fileNameOne, fileNameTwo);
     }
 }
