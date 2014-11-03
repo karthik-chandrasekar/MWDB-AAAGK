@@ -35,9 +35,12 @@ public class Task3c
 	public static MatlabProxyFactory factory = null;
 	public static MatlabProxy proxy = null;
 	
+	
+	// Function to construct similarity similarity matrix based on the option provided
+	
 	public void constructSimilaritySimilarityMatrix(int option) throws Exception{
 		SimilarityWrapper sobj = new SimilarityWrapper();
-		SimilarityGenerator kobj = new SimilarityGenerator(Task3.location_file_path);
+//		SimilarityGenerator kobj = new SimilarityGenerator(Task3.location_file_path);
 		for(int s=0;s<file_list.length;s++){
 			fileIndexMap.put((double) (s+1), file_list[s].getName());
 		}
@@ -48,11 +51,11 @@ public class Task3c
 			for(int j=i;j<file_list.length;j++){
 				System.out.println(file_list[i].getAbsolutePath());
 				filefilesimilarity[i][j] = sobj.getSimilarityForFiles(option,file_list[i].getAbsolutePath(),file_list[j].getAbsolutePath());
-				filefilesimilarity[i][j] = filefilesimilarity[j][i];
+				filefilesimilarity[j][i] = filefilesimilarity[i][j];
 			}
 		}
 		for(int i=0;i<file_list.length;i++){
-			for(int j=i;j<file_list.length;j++){
+			for(int j=0;j<file_list.length;j++){
 				input.append(filefilesimilarity[i][j]);
 				input.append(",");
 			}
@@ -63,6 +66,10 @@ public class Task3c
 		swriter.close();
 	}
 	
+	
+	
+	// Function to invoke SVD in matlab for file file similarity task
+	
 	public void doFileFileSVD(Integer r) throws MatlabInvocationException, FileNotFoundException
 	{
 		 PrintWriter swriter = new PrintWriter("C:\\Users\\ANIL\\Documents\\MATLAB\\svdfilefileoutput.csv");
@@ -71,9 +78,7 @@ public class Task3c
 		 proxy.eval(Task3.matlab_path);
 		 proxy.setVariable("r", r);
 		 proxy.eval("final_result = svdcalc_file_file(r)");
-		 proxy.setVariable("r", r);
 		 MatlabTypeConverter obj = new MatlabTypeConverter(proxy);
-		 proxy.eval("final_result = svdcalc(r)");
 		 double[][] temp = obj.getNumericArray("final_result").getRealArray2D();
 		 for(int l=0;l<r;l++)
 		 {

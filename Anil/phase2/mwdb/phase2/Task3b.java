@@ -35,6 +35,8 @@ public class Task3b
 	public static MatlabProxyFactory factory = null;
 	public static MatlabProxy proxy = null;
 	
+	
+	// Function to construct input for LDA matlab toolkit
 	public void constructLDAInput() throws IOException
 	{
 		System.out.println("Constructing LDA input..");
@@ -98,6 +100,9 @@ public class Task3b
 		System.out.println("Done");
 	}
 	
+	
+	
+	// Function to create feature space and initiate featureIndexMap
 	public void constructFeatureSpace() throws IOException
 	{	
 		System.out.println("Constructing feature space..");
@@ -141,6 +146,8 @@ public class Task3b
 	    System.out.println("Done");
 	}
 	
+	
+	// Function to invoke Matlab function to calculate LDA
 	public void calculateLDA(Integer k) throws MatlabConnectionException, MatlabInvocationException, FileNotFoundException
 	{
 		 System.out.println("Executing LDA");

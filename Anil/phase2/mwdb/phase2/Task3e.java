@@ -30,6 +30,8 @@ public class Task3e {
 	public static MatlabProxy proxy = null;
 
 	
+	// Function to calculate input LDA 
+	
 	public void constructLDAInputQuery() throws IOException{
 		PrintWriter swriter = new PrintWriter("C:\\Users\\ANIL\\Documents\\MATLAB\\ldaqueryinput.csv");
 		for(File file:file_list){
@@ -89,9 +91,12 @@ public class Task3e {
 		swriter.close();
 	}
 	
+	
+	// Function to invoke matlab function to do LDA search
 	public void doLDASearch(Integer k) throws MatlabInvocationException
 	{
 		 proxy.eval(Task3.matlab_path);
+		 proxy.setVariable("k", k);
 		 proxy.eval("res = LDASearch(k)");
 		 double[] results= (double[]) proxy.getVariable("res");
 		 for(int i=0;i<results.length/2;i++)

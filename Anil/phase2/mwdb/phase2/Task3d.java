@@ -35,6 +35,10 @@ public class Task3d {
 	public static MatlabProxyFactory factory = null;
 	public static MatlabProxy proxy = null;
 	
+	
+	
+	// Function to construct feature vector for the query
+	
 	public void constructFeatureVectorsQuerySVD() throws IOException{
 		PrintWriter swriter = new PrintWriter("C:\\Users\\ANIL\\Documents\\MATLAB\\svdqueryinput.csv");
 //		File folder = new File(inputQueryFolder);
@@ -67,15 +71,15 @@ public class Task3d {
 						fvectorMap.put(localindex,fvectorMap.get(localindex)+1);
 					}
 				}
-				if(featureIndexMap.containsKey(tword)){
-					int localindex = featureIndexMap.get(tword);
-					if(!fvectorMap.containsKey(localindex)){
-						fvectorMap.put(localindex, 1);
-					}
-					else{
-						fvectorMap.put(localindex,fvectorMap.get(localindex)+1);
-					}
-				}
+//				if(featureIndexMap.containsKey(tword)){
+//					int localindex = featureIndexMap.get(tword);
+//					if(!fvectorMap.containsKey(localindex)){
+//						fvectorMap.put(localindex, 1);
+//					}
+//					else{
+//						fvectorMap.put(localindex,fvectorMap.get(localindex)+1);
+//					}
+//				}
 			}
 			StringBuilder fvectorwriter = new StringBuilder();
 			int featurespaceSize = featureIndexMap.size();
@@ -95,6 +99,9 @@ public class Task3d {
 		}
 		swriter.close();
 	}
+	
+	
+	// Function to create feature space for the query
 	
 	public void constructFeatureSpace() throws IOException
 	{	
@@ -136,7 +143,7 @@ public class Task3d {
 	
 	
 	
-	
+	// Function to invoke matlab function to perform SVD search 
 	
 	public static void doSVDSearch(Integer r, Integer k) throws MatlabInvocationException{
 		//MatlabTypeConverter obj = new MatlabTypeConverter(proxy);

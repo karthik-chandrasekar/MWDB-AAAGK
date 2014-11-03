@@ -42,6 +42,8 @@ public class Task3
 		proxy = factory.getProxy();
 		
 		
+		// Code block for Interactive console input and invoke corresponding class objects
+		
 		String input = "";
 		String path = "";
 		while(!input.equals("exit"))
@@ -96,12 +98,6 @@ public class Task3
 				if(input.equals("3c")){
 					path = "";
 					int r,option = 0;
-					System.out.print("Enter the input files folder path : ");
-					Scanner p = new Scanner(System.in);
-					path = p.nextLine();
-					System.out.print("Provide number of Latent Semantics : ");
-					p = new Scanner(System.in);
-					r = Integer.parseInt(p.nextLine());
 					System.out.print("Select a similarity measure : "
 							+"1 - Task 1a\t"
 							+"2 - Task 1b\t"
@@ -111,8 +107,15 @@ public class Task3
 							+"6 - Task 1f\t"
 							+"7 - Task 1g\t"
 							+"8 - Task 1h\t");
-					p = new Scanner(System.in);
+					Scanner p = new Scanner(System.in);
 					option = Integer.parseInt(p.nextLine());
+					System.out.print("Enter the input files folder path : ");
+					p = new Scanner(System.in);
+					path = p.nextLine();
+					System.out.print("Provide number of Latent Semantics : ");
+					p = new Scanner(System.in);
+					r = Integer.parseInt(p.nextLine());
+					
 					File folder = new File(path);
 					file_list = folder.listFiles();
 					Task3c.file_list = file_list;
@@ -170,20 +173,43 @@ public class Task3
 				obj.constructLDAInputQuery();
 				obj.doLDASearch(k);
 			}
+			// Task 3f	
 			if(input.equals("3f")){
 				path = "";
-				System.out.print("Enter the input query file folder path : ");
+				int r,k,option=0;
+				System.out.print("Select a similarity measure : "
+						+"1 - Task 1a\t"
+						+"2 - Task 1b\t"
+						+"3 - Task 1c\t"
+						+"4 - Task 1d\t"
+						+"5 - Task 1e\t"
+						+"6 - Task 1f\t"
+						+"7 - Task 1g\t"
+						+"8 - Task 1h\t");
 				Scanner p = new Scanner(System.in);
+				option = Integer.parseInt(p.nextLine());
+				System.out.print("Enter the input query file folder path : ");
+				p = new Scanner(System.in);
 				path = p.nextLine();
-				Task3e.factory = factory;
-				Task3e.proxy = proxy;
+				System.out.print("Enter number of latent semantics : ");
+				p = new Scanner(System.in);
+				r = Integer.parseInt(p.nextLine());
+				System.out.print("Enter number of top documents to be retrieved : ");
+				p = new Scanner(System.in);
+				k = Integer.parseInt(p.nextLine());
+				Task3f.factory = factory;
+				Task3f.proxy = proxy;
 				File folder = new File(path);
 				file_list = folder.listFiles();
-				Task3f.file_list = file_list;
-				Task3c.fileIndexMap = Task3f.fileIndexMap;
+				if(Task3c.file_list.length > 0)
+					Task3f.file_list = Task3c.file_list;
+				else
+					System.out.println("Error in setting file list");
+				Task3f.inputFileList = file_list;
+				Task3f.fileIndexMap = Task3c.fileIndexMap;
 				Task3f obj = new Task3f();
-				obj.constructFileFileSimilarityQuery();
-				obj.doFileFileSVDSearch();
+				obj.constructFileFileSimilarityQuery(option);
+				obj.doFileFileSVDSearch(k,r);
 			}
 			}
 		proxy.disconnect();

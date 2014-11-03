@@ -35,14 +35,17 @@ public class Task3f {
 	public static MatlabProxy proxy = null;
 	public static File[] inputFileList = null;
 	
-	public void constructFileFileSimilarityQuery() throws Exception{
-		SimilarityGenerator kobj = new SimilarityGenerator(Task3.location_file_path);
+	
+	// Function to construct input query for File File similarity
+	public void constructFileFileSimilarityQuery(int option) throws Exception{
+		SimilarityWrapper sobj = new SimilarityWrapper();
+//		SimilarityGenerator kobj = new SimilarityGenerator(Task3.location_file_path);
 		PrintWriter swriter = new PrintWriter("C:\\Users\\ANIL\\Documents\\MATLAB\\filefileSimilarityQueryInput.csv");
 		double[][] filefilesimilarity = new double[file_list.length][file_list.length];
 		StringBuilder input = new StringBuilder();
 		for(int i=0;i<inputFileList.length;i++){
 			for(int j=0;j<file_list.length;j++){
-				filefilesimilarity[i][j] = kobj.getFileSimilarity(file_list[i].getAbsolutePath(),file_list[j].getAbsolutePath());
+				filefilesimilarity[i][j] = sobj.getSimilarityForFiles(option,file_list[i].getAbsolutePath(),file_list[j].getAbsolutePath());
 				input.append(filefilesimilarity[i][j]);
 				input.append(",");
 			}
@@ -53,10 +56,14 @@ public class Task3f {
 		swriter.close();
 	}
 	
-	public void doFileFileSVDSearch() throws MatlabInvocationException
+	
+	// Function to perform SVD search
+	public void doFileFileSVDSearch(int k, int r) throws MatlabInvocationException
 	{
 		 proxy.eval(Task3.matlab_path);
-		 proxy.eval("res = SVDSearch_file_file()");
+			proxy.setVariable("r", r);
+			proxy.setVariable("k", k);
+		 proxy.eval("res = SVDSearch_file_file(r,k)");
 		 double[] results= (double[]) proxy.getVariable("res");
 		 for(int i=0;i<results.length/2;i++)
 		 {
