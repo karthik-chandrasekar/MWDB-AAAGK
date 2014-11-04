@@ -80,7 +80,7 @@ if __name__ == "__main__" :
                  print "File" + prefix + simFiles  + " not found"
 
     print "\n Loading query file", query
-    heatObj.refresh(query)
+#    heatObj.refresh(query)
     print "\n Loading ", k , " most similar sim files to query", query
  #   print simData
     simData = sortSimData(simData)
@@ -88,5 +88,5 @@ if __name__ == "__main__" :
         print "\n Loading File " + str(data[1]) + " Rank =" + str(rank + 1) + \
               " Similarity = " + str(simData[rank][0])
         # Calling the heatmap
-        heatObj.refresh(data[2])
+   #     heatObj.refresh(data[2])
     
