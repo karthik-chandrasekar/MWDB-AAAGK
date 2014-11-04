@@ -93,8 +93,9 @@ public class Task3d {
 					fvectorwriter.append(",");
 				}
 			}
-			fvectorwriter.toString();
-			swriter.write(fvectorwriter.toString());
+			String output = fvectorwriter.toString();
+			output = output.substring(0,output.length()-1);
+			swriter.write(output);
 			swriter.write("\n");
 		}
 		swriter.close();

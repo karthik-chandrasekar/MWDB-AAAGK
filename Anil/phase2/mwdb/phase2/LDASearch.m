@@ -5,6 +5,7 @@ DT = load('document_topic_matrix');
 WT = struct2cell(WT);
 WT = cell2mat(WT);
 [wr,wc] = size(WT)
+
 DT = struct2cell(DT);
 DT = cell2mat(DT);
 
@@ -12,7 +13,13 @@ disp('converting query to topic space');
 Q = csvread('ldaqueryinput.csv');
 
 [qr,qc] = size(Q)
-QT = Q*WT;
+WK = zeros(qc,wc);
+for ifd=1:wr
+    for ifg=1:wc
+        WK(ifd,ifg) = WT(ifd,ifg);
+    end;
+end;
+QT = Q*WK;
 
 disp('calculating similarity between query and the input documents..');
 %Compute similarity between query file and document files
@@ -31,6 +38,9 @@ end;
 
 [output,index] = sort(Sim,'descend');
 [orows,ocols] = size(output);
+final_output = [];
+temp1 = [];
+temp2 = [];
 for f=1:ocols
     temp1(f) = output(1,f);
     temp2(f) = index(1,f);

@@ -63,6 +63,9 @@ end;
 
 [output,index] = sort(Sim,'descend');
 [outrows, outcols] = size(output);
+temp1 = [];
+temp2 = [];
+final_output = [];
 for f=1:outcols
     temp1(f) = output(1,f);
     temp2(f) = index(1,f);

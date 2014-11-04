@@ -66,10 +66,10 @@ public class Task3a {
 					featureIndexMap.put(vword, index);
 					index++;
 				}
-				if(!featureIndexMap.containsKey(tword)){
-					featureIndexMap.put(tword, index);
-					index++;
-				}
+//				if(!featureIndexMap.containsKey(tword)){
+//					featureIndexMap.put(tword, index);
+//					index++;
+//				}
 			}
 		}
 		//display the contents of map
@@ -135,7 +135,8 @@ public class Task3a {
 					fvectorwriter.append(",");
 				}
 			}
-			String output = fvectorwriter.toString().trim();
+			String output = fvectorwriter.toString();
+			output = output.substring(0,output.length()-1);
 			swriter.write(output);
 			swriter.write("\n");
 		}
