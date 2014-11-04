@@ -26,7 +26,6 @@ class ShellRunner(object) :
         commandLine = list(self._commandLine)
         commandLine.append(os.path.abspath(self.getEpiFileName(self._simFile1)))
         commandLine.append(os.path.abspath(self.getEpiFileName(self._simFile2)))
-        print commandLine
         self._output = subprocess.check_output(commandLine)
         return self._output
     
@@ -51,7 +50,7 @@ if __name__ == "__main__" :
     epiFolder = sys.argv[3]
 
     print "#### Checking similarity of", simFile1, " and ", simFile2
-    shellRunner = ShellRunner("java -jar input/karthik.jar input/LocationMatrix.csv") 
+    shellRunner = ShellRunner("java -jar input//karthik.jar input//LocationMatrix.csv") 
     import os
     epiFolder = os.path.abspath(epiFolder)   
     shellRunner.setEpiSuffix(epiFolder, "_word.txt")
