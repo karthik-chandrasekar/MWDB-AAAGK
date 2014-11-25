@@ -1,11 +1,12 @@
 import java.io.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 
 class KNNClassifier
 {
     
-    Map<String, String> fileLabel;
+    Map<String, String> fileLabelHash;
     
     public File[] getFilesInDir(String path) throws Exception
     {
@@ -15,9 +16,26 @@ class KNNClassifier
             return inputFiles;
     }
      
-    void loadFileLabelHash(File labelFile)
+    
+    
+    void loadFileLabelHash(File labelFile) throws Exception
     {
-        fileLabel = new HashMap<String, String>();
+        fileLabelHash = new HashMap<String, String>();
+        Scanner scannerObj = new Scanner(labelFile);
+        int count = 0;
+        String[] lineValue;
+        
+        while(scannerObj.hasNextLine())
+        {
+            if (count == 0)
+            {
+                count = 1;
+                continue;
+            }
+            
+            lineValue = scannerObj.nextLine().split(",");
+            fileLabelHash.put(lineValue[0], lineValue[1]);
+        }   
     }
     
     String findTopSimilarityFiles(String inputDirectory, String queryFilePath, int topK, String labelFilePath) throws Exception
@@ -48,7 +66,7 @@ class KNNClassifier
             
             loopCount++;
             
-            label = fileLabel.get(entry.getKey());
+            label = fileLabelHash.get(entry.getKey());
             if(labelCountMap.containsKey(label))
             {
                 count = labelCountMap.get(label);
