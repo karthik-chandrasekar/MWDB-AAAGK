@@ -56,14 +56,11 @@ public class VaFileEntry {
 		String code = this.calcCode(entry);
 		if(code == this.code) {
 			this.entries.add(entry);
-		} else {
-			System.out.println("Code " + code +" does not correspond to this bucket.");
 		}
 	}
 
 	private String calcCode(Vector vector) {
 		List<Integer> regionData = getRegionData(vector, this.minList, this.dimLength);
-		System.out.println(regionData);
 		return getCode(regionData, this.dimLength, this.noOfBits);
 	}
 
