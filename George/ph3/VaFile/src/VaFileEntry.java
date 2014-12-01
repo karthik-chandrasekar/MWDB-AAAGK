@@ -63,7 +63,6 @@ public class VaFileEntry {
 		List<Integer> regionData = getRegionData(vector, this.minList, this.dimLength);
 		return getCode(regionData, this.dimLength, this.noOfBits);
 	}
-
 	
 	private String getCode(List<Integer> regionData, List<Float> dimLength, int noOfBits2) {
 		// TODO Auto-generated method stub

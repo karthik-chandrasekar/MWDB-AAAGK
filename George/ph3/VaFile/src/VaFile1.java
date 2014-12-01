@@ -12,12 +12,14 @@ public class VaFile1 {
 	private List<Float>dimMax; 
 	private List<Float>dimMin;
 	private IndexTree vaTree;
+	private int bLength;
 	
 	public VaFile1(int bLength, String epiFileName) {
 		// Get Unique lines out
 		dimMax = new ArrayList<Float>();
 		dimMin = new ArrayList<Float>();
 		vaTree = new IndexTree();
+		this.bLength = bLength;
 		List <String>uniqueLines = this.getUniqueLines(epiFileName);
 		List<Float> line1Vect = new Vector(uniqueLines.get(0)).getVector();
 	
@@ -34,8 +36,13 @@ public class VaFile1 {
 			Vector vector =  new Vector(line);
 			VaFileEntry vaFileEntry = new VaFileEntry(vector, dimMin, dimMax, dimMax.size(), bLength);
 			int key = Integer.parseInt(vaFileEntry.code, 2);
-			Node entry = new Node(key, vaFileEntry);
-			vaTree.addNode(entry);
+			Node exactEntry = vaTree.findExact(key);
+			if(exactEntry != null) {
+				exactEntry.getVaFileEntry().addEntry(vector);
+			} else {
+				Node entry = new Node(key, vaFileEntry);
+				vaTree.addNode(entry);
+			}
 		}
 	}
 	
@@ -65,6 +72,11 @@ public class VaFile1 {
 	
 	public IndexTree getVaTree() {
 		return vaTree;
+	}
+	
+	public int getSize() {
+		//TODO Use getter instead.
+		return this.bLength * vaTree.noOfElements; 
 	}
 
 	private  List<String> getUniqueLines(String epiFileName) {

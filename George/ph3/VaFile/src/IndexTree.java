@@ -63,8 +63,21 @@ public class IndexTree {
 				next = next.right;
 			}
 		}
-		prev.setCost(cost);
+		if(prev != null) {
+			prev.setCost(cost);
+		}
 		return prev;
+	}
+	
+	Node findExact(int key) {
+		
+		Node found = find(key);
+		if (found != null) {
+			if(found.getKey() == key) {
+				return found;
+			} 
+		}
+		return null;
 	}
 
 	@Override
