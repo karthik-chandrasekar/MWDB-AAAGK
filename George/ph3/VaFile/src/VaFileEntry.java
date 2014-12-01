@@ -4,16 +4,19 @@ import java.util.List;
 /* Represents one entry in the VaFile */
 public class VaFileEntry {
 
-	public String code;
+	public	 String code;
 	List<Vector> entries;
 	public List<Float> minList; 
 	public List<Float> dimLength;
+	public List<Float> maxList;
 
 	private int noOfDims;
 	private int noOfBits;
 
 	public VaFileEntry(Vector vector, List<Float> minVal, List<Float> maxVal, int noOfDims, int noOfBits) {
 		this.minList = minVal;
+		this.maxList = maxVal;
+		this.entries = new ArrayList<Vector>();
 		this.noOfBits = noOfBits;
 		this.noOfDims = noOfDims;
 		this.dimLength = calcDimLength(minVal, maxVal);
@@ -106,6 +109,58 @@ public class VaFileEntry {
 			regData.add(dimNo, region);
 		}
 		return regData;
+	}
+	
+	public List<Vector> getEntries() {
+		return entries;
+	}
+
+	public void setEntries(List<Vector> entries) {
+		this.entries = entries;
+	}
+
+	public List<Float> getMinList() {
+		return minList;
+	}
+
+	public void setMinList(List<Float> minList) {
+		this.minList = minList;
+	}
+
+	public List<Float> getDimLength() {
+		return dimLength;
+	}
+
+	public void setDimLength(List<Float> dimLength) {
+		this.dimLength = dimLength;
+	}
+
+	public List<Float> getMaxList() {
+		return maxList;
+	}
+
+	public void setMaxList(List<Float> maxList) {
+		this.maxList = maxList;
+	}
+
+	public int getNoOfDims() {
+		return noOfDims;
+	}
+
+	public void setNoOfDims(int noOfDims) {
+		this.noOfDims = noOfDims;
+	}
+
+	public int getNoOfBits() {
+		return noOfBits;
+	}
+
+	public void setNoOfBits(int noOfBits) {
+		this.noOfBits = noOfBits;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
 	}
 
 	@Override

@@ -1,7 +1,9 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents VaFile.
@@ -11,18 +13,19 @@ public class VaFile1 {
 
 	private List<Float>dimMax; 
 	private List<Float>dimMin;
-	private IndexTree vaTree;
+	private Map<Long,VaFileEntry> vaFileEntryMap;
 	private int bLength;
 	
 	public VaFile1(int bLength, String epiFileName) {
 		// Get Unique lines out
 		dimMax = new ArrayList<Float>();
 		dimMin = new ArrayList<Float>();
-		vaTree = new IndexTree();
 		this.bLength = bLength;
+		this.vaFileEntryMap = new HashMap<Long, VaFileEntry>();
 		List <String>uniqueLines = this.getUniqueLines(epiFileName);
 		List<Float> line1Vect = new Vector(uniqueLines.get(0)).getVector();
 	
+		// Size of vector in line 1 equals dimensions
 		for(int dim = 0; dim < line1Vect.size(); dim++) {
 			dimMax.add(dim, line1Vect.get(dim));
 			dimMin.add(dim, line1Vect.get(dim));
@@ -35,13 +38,11 @@ public class VaFile1 {
 		for(String line : uniqueLines) {
 			Vector vector =  new Vector(line);
 			VaFileEntry vaFileEntry = new VaFileEntry(vector, dimMin, dimMax, dimMax.size(), bLength);
-			int key = Integer.parseInt(vaFileEntry.code, 2);
-			Node exactEntry = vaTree.findExact(key);
-			if(exactEntry != null) {
-				exactEntry.getVaFileEntry().addEntry(vector);
+			long key = Long.parseLong(vaFileEntry.getCode(), 2);
+			if(vaFileEntryMap.containsKey(key) == true) {
+				vaFileEntryMap.get(key).getEntries().add(vector);
 			} else {
-				Node entry = new Node(key, vaFileEntry);
-				vaTree.addNode(entry);
+				vaFileEntryMap.put(key, vaFileEntry);
 			}
 		}
 	}
@@ -59,24 +60,27 @@ public class VaFile1 {
 		}
 	}
 	
+	public Map<Long, VaFileEntry> getVaFileEntryMap() {
+		return vaFileEntryMap;
+	}
+
+	public void setVaFileEntryMap(Map<Long, VaFileEntry> vaFileEntryMap) {
+		this.vaFileEntryMap = vaFileEntryMap;
+	}
+
 	public VaFileEntry getVaFileEntry(String code) {
 		// Check in the tree and respond with the Appropriate entry.
 		return this.getVaFileEntry(Integer.parseInt(code, 2));
 	}
 	
-	public VaFileEntry getVaFileEntry(int key) {
+	public VaFileEntry getVaFileEntry(long key) {
 		// Check in the tree and respond with the Appropriate entry.
-		Node foundNode = vaTree.find(key);
-		return foundNode.getVaFileEntry();
-	}
-	
-	public IndexTree getVaTree() {
-		return vaTree;
+		return this.vaFileEntryMap.get(key);
 	}
 	
 	public int getSize() {
 		//TODO Use getter instead.
-		return this.bLength * vaTree.noOfElements; 
+		return this.bLength * vaFileEntryMap.size(); 
 	}
 
 	private  List<String> getUniqueLines(String epiFileName) {
@@ -103,7 +107,8 @@ public class VaFile1 {
 
 	@Override
 	public String toString() {
-		return "VaFile1 [dimMax=" + dimMax + ", dimMin=" + dimMin + ", vaTree="
-				+ vaTree + "]";
+		return "VaFile1 [dimMax=" + dimMax + ", dimMin=" + dimMin
+				+ ", vaFileEntryMap=" + vaFileEntryMap + ", bLength=" + bLength
+				+ "]";
 	}
 }
