@@ -10,8 +10,15 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
+
+/*  author: Akshay 
+ *  
+ *  Map the given set of objects to reduced space for efficient retrieval.
+    For Query by example, Map query object into the reduced space and retrieve similar objects.
+*/
 public class FastMap {
 
 	int N; // no. of objects
@@ -29,17 +36,42 @@ public class FastMap {
 	public FastMap(int r,String DirPath, int option) throws Exception {
 		
 		this.r = r;
-		this.DirPath=DirPath;
+		/*this.DirPath=DirPath;
 		loadFiles();
-		coordinates = new double[N][r];
+		*/
 		pivotDistances = new double[r];
 		PV = new int[2][r];
 		this.option = option;
 		this.sWrapper = new SimilarityWrapper();
-		distanceMatrix = new double[N][N];
-		computeDistanceMatrix();
-		
+		//distanceMatrix = new double[N][N];
+		//computeDistanceMatrix();
+		//coordinates = new double[N][r];
 	}
+public void computeDistanceMatrix(ArrayList<File> files) {
+		
+	     this.files=files;
+	     N =files.size();
+	     distanceMatrix = new double[N][N];
+		double sim;
+		for(int i=0;i<N;i++){
+			for(int j=i+1;j<N;j++){
+				try {
+				   
+					 sim  = sWrapper.getSimilarityForFiles(option, files.get(i).getAbsolutePath(), files.get(j).getAbsolutePath());
+				
+					distanceMatrix[i][j]=  1/(1+sim);
+				
+				
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		coordinates = new double[N][r];
+		System.out.println("DistanceMatrix computed");
+	}
+	
 	// compute the initial distances between every object
 	private void computeDistanceMatrix() {
 		
@@ -47,24 +79,21 @@ public class FastMap {
 		for(int i=0;i<N;i++){
 			for(int j=i+1;j<N;j++){
 				try {
-					
-				
 				   
 					 sim  = sWrapper.getSimilarityForFiles(option, files.get(i).getAbsolutePath(), files.get(j).getAbsolutePath());
-				if(sim==0)
-					distanceMatrix[i][j]= Double.MAX_VALUE;
-				else
-					distanceMatrix[i][j] = 1/sim;
-					
+				
+					distanceMatrix[i][j]=  1/(1+sim);
+				
+				
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
+		
 		System.out.println("DistanceMatrix computed");
 	}
-
 	private void loadFiles() {
 		
 		File folder = new File(DirPath);
@@ -76,7 +105,7 @@ public class FastMap {
 	
 	// find the coordinates of the objects in the reduced space
 	
-	public void getReducedSpace(){
+	public double[][] getReducedSpace(){
 		
 		
 		int iteration = 0;
@@ -107,6 +136,8 @@ public class FastMap {
 	    System.out.println("Iteration - "+iteration+" done.");
 	    R--;
 		}  
+		
+		return coordinates;
 	}
 
 
@@ -216,6 +247,26 @@ private double distancebtwObjects(int i, File file, double[] newCoordinates,int 
 	    	   
 	    	   return null;
 	      }
+		
+		public double[] getQueryCoordinates(String filePath) {
+	
+			double[] newCoordiantes = new double[r];
+	       	   
+	    	   double pivotDistance = 0;
+	    	   
+	    	   File query = new File(filePath); 
+	    	   
+	    	   for(int i=0;i<r;i++){
+	
+	    		  pivotDistance = pivotDistances[i];
+	    		   
+	    		  newCoordiantes[i] = (double)(Math.pow(distancebtwObjects(PV[0][i], query,newCoordiantes, i-1), 2) - Math.pow(distancebtwObjects(PV[1][i], query,newCoordiantes, i-1), 2) + Math.pow(pivotDistance, 2))/(2*pivotDistance);
+	    		   
+	    	   }
+	
+			return newCoordiantes;
+		}
+		
 // find distance measures of every object from the query object in the reduces space.
 	private Set<Integer> findSortedDistancesbtwPoints(double[] newCoordiantes) {
 		  
@@ -282,24 +333,51 @@ private double distancebtwObjects(int i, File file, double[] newCoordinates,int 
 			e.printStackTrace();
 		}
 		
-				if(sim==0)
-					return Double.MAX_VALUE;
-				else
-					return 1/sim;
+				return 1/(1+sim);
 		}
 	
 	
 	
 	public static void main(String[] args) {
 			
+		Scanner scanner = new Scanner(System.in);
+		System.out.println("Enter dimension of reduced space");
+		int r = scanner.nextInt();
+		
+		scanner.nextLine();
+		System.out.println("Enter the directory of input simulation files: ");
+		String SimulationFilesDir = scanner.nextLine();
+		
+		System.out.print("Select a similarity measure : "
+				+"1 - Task 1a\t"
+				+"2 - Task 1b\t"
+				+"3 - Task 1c\t"
+				+"4 - Task 1d\t"
+				+"5 - Task 1e\t"
+				+"6 - Task 1f\t"
+				+"7 - Task 1g\t"
+				+"8 - Task 1h\t");
+		
+		int option = scanner.nextInt();
+		scanner.nextLine();
+		
 			FastMap fm;
 			try {
-				fm = new FastMap(8, "/home/akshay/Desktop/phase2/wordfiles",6);
+				fm = new FastMap(r, SimulationFilesDir,option);
 			    fm.getReducedSpace();
 			    System.out.println("Mapping Error: " + fm.calculateMappingError());
 			     
-			    fm.getSimilarSimulations("/home/akshay/Desktop/phase2/query.csv_word.txt", 8, 4);
-		 
+			    boolean stop=false;
+			    while(!stop){
+			    System.out.println("Enter Query file location:");
+			    String queryFile = scanner.nextLine();
+			    
+			    System.out.println("Enter k");
+			    int k = scanner.nextInt();
+			    scanner.nextLine();
+			    
+			    fm.getSimilarSimulations(queryFile, r, k);
+			    }
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

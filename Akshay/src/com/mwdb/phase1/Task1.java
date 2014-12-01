@@ -21,14 +21,18 @@ public class Task1 {
 	static double[] bands = null; 
     static boolean executed1=false;
     
-    public static void execute(int r,int w,int h,String folderName){
+    public static void execute(int r,int w,int h,String inputFolderName , String outputFolder){
     	
-    	if(!executed1){
-    	final File folder = new File(folderName);
+    	File outputfolder = new File(outputFolder);
+		outputfolder.mkdirs();
+    	final File folder = new File(inputFolderName);
     	try {
-    	 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("epidemic_word_file.txt")));
+    	 
+    		//PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("epidemic_word_file.txt")));
     	for( File file : folder.listFiles()){
-    	
+    		String fileName = outputFolder+"/"+file.getName()+"_word.txt";
+    		
+    		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName)));
     	//	System.out.println(file.getName());
         
         BufferedReader br = new BufferedReader(new FileReader(file)); 
@@ -109,17 +113,15 @@ public class Task1 {
             }
 
             data.clear();    
-           
+            out.flush();
+            out.close();   
         }
-    	out.flush();
-        
-        out.close();
+    	
     	}catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    	executed1=true;
-    	}
+    	
     	}
     
 

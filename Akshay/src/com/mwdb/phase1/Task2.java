@@ -13,60 +13,52 @@ import java.util.HashMap;
 
 public class Task2 {
 
-	static boolean executed2 = false;
 	
-	public static void execute(double a) {
+	static HashMap<String, String> pmatrix= new HashMap<String, String>();
+	public static void execute(String wordFilesFolderName,String avgFilesFolderName,String diffFilesFolderName,String LocationFilePath, double a) {
 		
-		if(!executed2){
-		File EWfile = new File("epidemic_word_file.txt");
-		File graph = new File("/home/akshay/LocationMatrix/LocationMatrix.csv");
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(graph));
-		    String line;
-		    int count=0;
-		    String[] states = null;
-		    HashMap<String, String> pmatrix= new HashMap<String, String>();
-		    ArrayList<String> prox = new ArrayList<String>();
-		    while ((line = br.readLine()) != null) { 
-	                count++;
-	                if (count==1) {
-	                    states = line.split(",");
-	                    continue;
-	                }
-	               
-	                String[] temp = line.split(",");
-	                 for(int i=1;i<temp.length;i++){
-	                	 if(Integer.parseInt(temp[i])==1)
-	                		 prox.add(states[i]);
-	                 }
-	                 
-	                 pmatrix.put(temp[0],ArrayListToString(prox));
-	                 prox.clear();
-			}
-			br.close();
-			
-			br = new BufferedReader(new FileReader(EWfile));
-			HashMap<String,ArrayList<String>> data = new HashMap<String, ArrayList<String>>();
-			 while ((line = br.readLine()) != null) { 
-				String[] temp = line.split(",");
-				
-					String s =temp[0]+"-"+temp[1];
-				if(!data.containsKey(s))
-				{ ArrayList<String> l = new ArrayList<String>();
-				l.add(temp[2]+getString(temp));
-				data.put(s,l);
-				}
-				else{
-					ArrayList<String> l = data.get(s);
+		File graph = new File(LocationFilePath);
+		final File folder = new File(wordFilesFolderName);
+		computeLocationMatrix(graph);
+
+		 File avgfolder = new File(avgFilesFolderName);
+		 File difffolder = new File(diffFilesFolderName);
+		 avgfolder.mkdirs();
+		 difffolder.mkdirs();
+		
+		for( File file : folder.listFiles()){
+		
+		String line;
+		BufferedReader br;
+		try{
+			br = new BufferedReader(new FileReader(file));
+				HashMap<String,ArrayList<String>> data = new HashMap<String, ArrayList<String>>();
+			 
+				while ((line = br.readLine()) != null) { 
+					String[] temp = line.split(",");
+					
+						String s =temp[0]+"-"+temp[1];
+					if(!data.containsKey(s))
+					{ ArrayList<String> l = new ArrayList<String>();
 					l.add(temp[2]+getString(temp));
-					data.put(s, l);
+					data.put(s,l);
 					}
-			 }
+					else{
+						ArrayList<String> l = data.get(s);
+						l.add(temp[2]+getString(temp));
+						data.put(s, l);
+						}
+					
+				}
+				br.close();
 	           
-			 br.close();
-			 br = new BufferedReader(new FileReader(EWfile));
-			 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("epidemic_word_file_avg.txt")));
-			 PrintWriter outt = new PrintWriter(new BufferedWriter(new FileWriter("epidemic_word_file_diff.txt")));
+			 
+			 br = new BufferedReader(new FileReader(file));
+			 String avgfile = avgFilesFolderName+"/"+file.getName()+"_avg" ;
+			 String difffile = diffFilesFolderName+"/"+file.getName()+"_diff" ;
+			 
+			 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(avgfile)));
+			 PrintWriter outt = new PrintWriter(new BufferedWriter(new FileWriter(difffile)));
 			
 			 String[] vals;
 			 ArrayList<ArrayList<Double>> rows = new ArrayList<ArrayList<Double>>();
@@ -126,17 +118,48 @@ public class Task2 {
 			 br.close();
 			 out.close(); 
 			 outt.close();
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			 data.clear();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
-		executed2 = true;
 		}
+		}
+		
+		}
+	
+
+	private static void computeLocationMatrix(File graph) {
+		
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(graph));
+		    String line;
+		    int count=0;
+		    String[] states = null;
+		  
+		    ArrayList<String> prox = new ArrayList<String>();
+		    while ((line = br.readLine()) != null) { 
+	                count++;
+	                if (count==1) {
+	                    states = line.split(",");
+	                    continue;
+	                }
+	               
+	                String[] temp = line.split(",");
+	                 for(int i=1;i<temp.length;i++){
+	                	 if(Integer.parseInt(temp[i])==1)
+	                		 prox.add(states[i]);
+	                 }
+	                 
+	                 pmatrix.put(temp[0],ArrayListToString(prox));
+	                 prox.clear();
+			}
+			br.close();
+		
+		
+	}catch(Exception e){
+		
 	}
+		}
 
 	private static ArrayList<Double> ComputeWinDiff(
 			ArrayList<Double> currentRow, ArrayList<Double> avgVector, double a) {

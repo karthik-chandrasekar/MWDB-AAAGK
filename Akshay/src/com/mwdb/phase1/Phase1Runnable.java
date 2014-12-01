@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class Phase1Runnable {
 
-	public static void main(String[] args){
+	/*public static void main(String[] args){
 		
 		Scanner scanner = new Scanner(System.in);
 		System.out.println("Enter no. of bands: ");
@@ -60,5 +60,10 @@ public class Phase1Runnable {
 			
 		
 	}
+*/
 	
+	public static void main(String[] args) {
+	//	Task1.execute(5, 5, 4, "/home/akshay/Desktop/phase2/simulationfiles", "/home/akshay/Desktop/phase2/wordfiles");
+		Task2.execute("/home/akshay/Desktop/phase2/wordfiles", "/home/akshay/Desktop/phase2/avgwordfiles", "/home/akshay/Desktop/phase2/diffwordfiles","/home/akshay/Desktop/phase2", 0.5);
+	}
 }
