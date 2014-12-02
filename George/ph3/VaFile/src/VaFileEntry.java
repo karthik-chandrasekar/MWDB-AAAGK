@@ -88,7 +88,13 @@ public class VaFileEntry {
 		}
 		return compBin;
 	}
-	
+	/***
+	 * 
+	 * @param vector - The vector whose Region is to be found.
+	 * @param minVal - The list of Minimum Values for each dimension
+	 * @param dimLen - The length in each dimension
+	 * @return - The region Numbers corresponding to the regionData. 
+	 */
 	private List<Integer> getRegionData(Vector vector, List<Float> minVal, List<Float> dimLen) {
 		// This computes the values of the vector.
 		// Returns the region Number it Corresponds to.
@@ -105,6 +111,11 @@ public class VaFileEntry {
 				region = (int)((vectVal - min)/dimLength);
 			} else {
 				region = 0;
+			}
+			
+			// Last point(MaxPoint) is to be included in the last region as the boundary includes it.
+			if(region == noOfDims) {
+				region --;
 			}
 			regData.add(dimNo, region);
 		}

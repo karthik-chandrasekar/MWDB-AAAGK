@@ -44,7 +44,6 @@ public class Vector {
 
 	@Override
 	public String toString() {
-		return "Vector [file=" + file + ", State=" + State + ", Time=" + time
-				+ ", vector=" + vector + "]";
+		return "Vector [vector=" + vector + "]";
 	}
 }
