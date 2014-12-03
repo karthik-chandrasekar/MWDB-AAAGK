@@ -133,7 +133,7 @@ public void computeDistanceMatrix(ArrayList<File> files) {
 	    }
 	    
 	    iteration++;
-	    System.out.println("Iteration - "+iteration+" done.");
+	   // System.out.println("Iteration - "+iteration+" done.");
 	    R--;
 		}  
 		

@@ -21,15 +21,16 @@ public class LSH {
 	//double[][] distanceMatrix;
 	double[][] coordinates;
 	//ArrayList<Double[][]> rv = new ArrayList<Double[][]>();
+	Double[][][] rv;
 	int N;
 	int K;
 	int L;
 	private ArrayList<File> files = new ArrayList<File>();
 	private ArrayList<Hashtable<String, ArrayList<Integer>>> indexes = new ArrayList<Hashtable<String,ArrayList<Integer>>>();
 	int r;
-	Double[] a;
+	//Double[] a;
 	Double b;
-    int w=4;
+    int w=3;
     FastMap fm;
 
 	public LSH(String inputDir, int K, int L, int r) throws Exception{
@@ -37,7 +38,8 @@ public class LSH {
 		this.K=K;
 		this.L=L;
 		this.r=r;
-		a = new Double[r];
+		rv = new Double[L][K][r];
+		
 		loadFiles(inputDir);
 		initializeIndexes();
 		//computeDistanceMatrix();
@@ -83,11 +85,11 @@ public class LSH {
 			
 			for(int j=0;j<K;j++){
 
-				getRandomVector();
+				rv[i][j] = getRandomVector();
 				getRandomShift();
 
 				for(int n=0;n<N;n++){
-					hashes[n][j]=computeHash(a,b,n);
+					hashes[n][j]=computeHash(rv[i][j],b,n);
 				}
 			}
             buildHashTable(i,hashes);
@@ -137,12 +139,12 @@ public class LSH {
 		b= Math.random() * w;
 	}
 
-	private void getRandomVector() {
-		
+	private Double[] getRandomVector() {
+		Double[] a = new Double[r];
 		for(int i =0;i<r;i++){
 			a[i]=getGaussianRandom();
 		}
-		
+		return a;
 	}
 
 	private Double getGaussianRandom() {
@@ -164,26 +166,28 @@ public class LSH {
 	    Double[] hashes= new Double[K];
 	    
 	    double[] queryCoordinates = fm.getQueryCoordinates(filePath);
-	    
+	    int vectors =0;
 	    for(int i =0;i<L;i++){
 			
 			for(int j=0;j<K;j++){
-
-				getRandomVector();
+//
+//				getRandomVector();
 				getRandomShift();
-				hashes[j]=computeHashForQuery(a,b,queryCoordinates);
+				hashes[j]=computeHashForQuery(rv[i][j],queryCoordinates);
 			
 			}
 			String key= getHashindex(hashes);
 			ArrayList<Integer> list = indexes.get(i).get(key);
 			if(list!=null){
+				vectors = vectors + list.size();
 			for(int p :list){
 				if(!res.contains(p))
 					res.put(p, 1);
 			}
 			}
 		}
-	    
+	    System.out.println("Total vectors considered : "+ vectors);
+	    System.out.println("unique vectors : "+ res.size());
 	    Set<Integer> sortedFileIndexes = findSimilarity(res,filePath);
 		System.out.println("Similar simulations: ");
 	   
@@ -196,13 +200,13 @@ public class LSH {
 	}
 	
 	
-	private Double computeHashForQuery(Double[] a2, Double b2,
+	private Double computeHashForQuery(Double[] a2,
 			double[] queryCoordinates) {
 
 		double product = 0;
 		   
 		for(int i=0;i<r;i++){
-			product = product + a[i]*queryCoordinates[i];
+			product = product + a2[i]*queryCoordinates[i];
 		}
 
 		return Math.floor((product + b)/(double)w );
@@ -252,10 +256,10 @@ public class LSH {
 
 		LSH lsh;
 		try {
-			lsh = new LSH("/home/akshay/Desktop/phase2/word", 5, 60,10);
+			lsh = new LSH("/home/akshay/Desktop/phase2/word_1", 10, 30,70);
 			lsh.run();
 			System.out.println("done");
-			lsh.search("/home/akshay/Desktop/phase2/word/n12.csv", 8);
+			lsh.search("/home/akshay/Desktop/phase2/word/n11.csv", 8);
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
