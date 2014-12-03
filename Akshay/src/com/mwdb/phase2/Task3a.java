@@ -1,5 +1,6 @@
 package com.mwdb.phase2;
 
+import java.awt.BufferCapabilities.FlipContents;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -82,12 +83,58 @@ public class Task3a {
 	    System.out.println("done..");
 	}
 	
+	public int constructFeatureSpaceLSH() throws IOException
+	{	
+		System.out.println("constructing feature space..");
+		for(int s=0;s<file_list.length;s++){
+			fileIndexMap.put((double) (s+1), file_list[s].getName());
+		}
+		System.out.println("FileIndexMap size"+fileIndexMap.size());
+//		File folder = new File(pathtofolder);
+//		File[] file_list = folder.listFiles();
+		int index=1;
+		for(File file:file_list){
+			List<String> rows = Files.readAllLines(file.toPath(), charset);
+			for(int i=0;i<rows.size();i++){
+				String[] rvalues = rows.get(i).split(",");
+				StringBuilder word = new StringBuilder();
+				StringBuilder timeword = new StringBuilder();
+				for(int j=3;j<rvalues.length;j++){
+					word.append(rvalues[j]);
+					word.append(",");
+				}
+				String vword = word.toString();
+				timeword.append(rvalues[2]+"_");
+				timeword.append(vword);
+				String tword = timeword.toString();
+				if(!featureIndexMap.containsKey(vword)){
+					featureIndexMap.put(vword, index);
+					index++;
+				}
+//				if(!featureIndexMap.containsKey(tword)){
+//					featureIndexMap.put(tword, index);
+//					index++;
+//				}
+			}
+		}
+		//display the contents of map
+		Iterator<Entry<String, Integer>> itr = featureIndexMap.entrySet().iterator();
+	    while (itr.hasNext()) {
+	        Map.Entry pairs = (Map.Entry)itr.next();
+//	        System.out.println(pairs.getKey() + " = " + pairs.getValue());
+	    }
+	    System.out.println("Size of Feature space "+featureIndexMap.size());
+	    return featureIndexMap.size();
+	}
+	
 	//Function to construct feature vectors to be passed as input to SVD calc function
 	public void constructFeatureVectorsSVD() throws IOException{ 
-		System.out.println("Constructing SVD input");
-		PrintWriter swriter = new PrintWriter("/home/akshay/svdinput.csv");
-		for(File file:file_list){
-			HashMap<Integer, Integer> fvectorMap = new HashMap<Integer,Integer>();
+		System.out.println("Constructing Obj-Feature Matrix");
+		//PrintWriter swriter = new PrintWriter("/home/akshay/svdinput.csv");
+		double[][] coordinates = new double[file_list.length][featureIndexMap.size()];
+		HashMap<Integer, Integer> fvectorMap = new HashMap<Integer,Integer>();
+		for(int n=0;n<file_list.length;n++){
+			File file = file_list[n];
 			List<String> rows = Files.readAllLines(file.toPath(), charset);
 			// Loop over each row and find number of occurrances in the file
 			for(int i=0;i<rows.size();i++)
@@ -100,10 +147,10 @@ public class Task3a {
 				}
 				String vword = word.toString();
 				// Additional feature - <time,word>
-				StringBuilder timeword = new StringBuilder();
+				/*StringBuilder timeword = new StringBuilder();
 				timeword.append(rvalues[2]+"_");
 				timeword.append(vword);
-				String tword = timeword.toString();
+				String tword = timeword.toString();*/
 				if(featureIndexMap.containsKey(vword)){
 					int localindex = featureIndexMap.get(vword);
 					if(!fvectorMap.containsKey(localindex)){
@@ -123,27 +170,160 @@ public class Task3a {
 //					}
 //				}
 			}
-			StringBuilder fvectorwriter = new StringBuilder();
+			//StringBuilder fvectorwriter = new StringBuilder();
 			int featurespaceSize = featureIndexMap.size();
 			for(int k=1;k<=featurespaceSize;k++){
 				if(fvectorMap.containsKey(k)){
-					fvectorwriter.append(fvectorMap.get(k));
-					fvectorwriter.append(",");
+					
+					coordinates[n][k-1] = fvectorMap.get(k);
+					/*fvectorwriter.append(fvectorMap.get(k));
+					fvectorwriter.append(",");*/
 				}
 				else{
-					fvectorwriter.append("0");
-					fvectorwriter.append(",");
+					coordinates[n][k-1] = 0;
+					/*fvectorwriter.append("0");
+					fvectorwriter.append(",");*/
 				}
 			}
-			String output = fvectorwriter.toString();
+			/*String output = fvectorwriter.toString();
 			output = output.substring(0,output.length()-1);
 			swriter.write(output);
-			swriter.write("\n");
+			swriter.write("\n")*/;
+			fvectorMap.clear();
 		}
-		swriter.close();
+		//swriter.close();
 		System.out.println("Done");
 	}
 	
+	
+	public double[][] constructFeatureVectors() throws IOException{ 
+		System.out.println("Constructing Obj-Feature Matrix");
+		//PrintWriter swriter = new PrintWriter("/home/akshay/svdinput.csv");
+		double[][] coordinates = new double[file_list.length][featureIndexMap.size()];
+		HashMap<Integer, Integer> fvectorMap = new HashMap<Integer,Integer>();
+		for(int n=0;n<file_list.length;n++){
+			File file = file_list[n];
+			List<String> rows = Files.readAllLines(file.toPath(), charset);
+			// Loop over each row and find number of occurrances in the file
+			for(int i=0;i<rows.size();i++)
+			{
+				String[] rvalues = rows.get(i).split(",");
+				StringBuilder word = new StringBuilder();
+				for(int j=3;j<rvalues.length;j++){
+					word.append(rvalues[j]);
+					word.append(",");
+				}
+				String vword = word.toString();
+				// Additional feature - <time,word>
+				/*StringBuilder timeword = new StringBuilder();
+				timeword.append(rvalues[2]+"_");
+				timeword.append(vword);
+				String tword = timeword.toString();*/
+				if(featureIndexMap.containsKey(vword)){
+					int localindex = featureIndexMap.get(vword);
+					if(!fvectorMap.containsKey(localindex)){
+						fvectorMap.put(localindex, 1);
+					}
+					else{
+						fvectorMap.put(localindex,fvectorMap.get(localindex)+1);
+					}
+				}
+//				if(featureIndexMap.containsKey(tword)){
+//					int localindex = featureIndexMap.get(tword);
+//					if(!fvectorMap.containsKey(localindex)){
+//						fvectorMap.put(localindex, 1);
+//					}
+//					else{
+//						fvectorMap.put(localindex,fvectorMap.get(localindex)+1);
+//					}
+//				}
+			}
+			//StringBuilder fvectorwriter = new StringBuilder();
+			int featurespaceSize = featureIndexMap.size();
+			for(int k=1;k<=featurespaceSize;k++){
+				if(fvectorMap.containsKey(k)){
+					
+					coordinates[n][k-1] = fvectorMap.get(k);
+					/*fvectorwriter.append(fvectorMap.get(k));
+					fvectorwriter.append(",");*/
+				}
+				else{
+					coordinates[n][k-1] = 0;
+					/*fvectorwriter.append("0");
+					fvectorwriter.append(",");*/
+				}
+			}
+			/*String output = fvectorwriter.toString();
+			output = output.substring(0,output.length()-1);
+			swriter.write(output);
+			swriter.write("\n")*/;
+			fvectorMap.clear();
+		}
+		//swriter.close();
+		System.out.println("Done");
+		return coordinates;
+	}
+	
+	public double[] getQueryCoordinates(File queryFile) throws IOException{
+		HashMap<Integer, Integer> fvectorMap = new HashMap<Integer,Integer>();
+		List<String> rows = Files.readAllLines(queryFile.toPath(), charset);
+		double[] coordinates = new double[featureIndexMap.size()];
+		// Loop over each row and find number of occurrances in the file
+		for(int i=0;i<rows.size();i++)
+		{
+			String[] rvalues = rows.get(i).split(",");
+			StringBuilder word = new StringBuilder();
+			for(int j=3;j<rvalues.length;j++){
+				word.append(rvalues[j]);
+				word.append(",");
+			}
+			String vword = word.toString();
+			// Additional feature - <time,word>
+			/*StringBuilder timeword = new StringBuilder();
+			timeword.append(rvalues[2]+"_");
+			timeword.append(vword);
+			String tword = timeword.toString();*/
+			if(featureIndexMap.containsKey(vword)){
+				int localindex = featureIndexMap.get(vword);
+				if(!fvectorMap.containsKey(localindex)){
+					fvectorMap.put(localindex, 1);
+				}
+				else{
+					fvectorMap.put(localindex,fvectorMap.get(localindex)+1);
+				}
+			}
+//			if(featureIndexMap.containsKey(tword)){
+//				int localindex = featureIndexMap.get(tword);
+//				if(!fvectorMap.containsKey(localindex)){
+//					fvectorMap.put(localindex, 1);
+//				}
+//				else{
+//					fvectorMap.put(localindex,fvectorMap.get(localindex)+1);
+//				}
+//			}
+		}
+		//StringBuilder fvectorwriter = new StringBuilder();
+		int featurespaceSize = featureIndexMap.size();
+		for(int k=1;k<=featurespaceSize;k++){
+			if(fvectorMap.containsKey(k)){
+				
+				coordinates[k-1] = fvectorMap.get(k);
+				/*fvectorwriter.append(fvectorMap.get(k));
+				fvectorwriter.append(",");*/
+			}
+			else{
+				coordinates[k-1] = 0;
+				/*fvectorwriter.append("0");
+				fvectorwriter.append(",");*/
+			}
+		}
+		/*String output = fvectorwriter.toString();
+		output = output.substring(0,output.length()-1);
+		swriter.write(output);
+		swriter.write("\n")*/;
+		fvectorMap.clear();
+        return coordinates;
+	}
 	// Function to invoke SVD calculation function in Matlab
 	public void calculateSVD(Integer r) throws MatlabConnectionException, MatlabInvocationException, FileNotFoundException
 	{

@@ -1,7 +1,9 @@
 package com.mwdb.phase3;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,6 +17,7 @@ import java.util.Set;
 
 import com.mwdb.phase2.FastMap;
 import com.mwdb.phase2.SimilarityWrapper;
+import com.mwdb.phase2.Task3a;
 
 public class LSH {
 
@@ -25,25 +28,30 @@ public class LSH {
 	int N;
 	int K;
 	int L;
-	private ArrayList<File> files = new ArrayList<File>();
+	private File[] files;
 	private ArrayList<Hashtable<String, ArrayList<Integer>>> indexes = new ArrayList<Hashtable<String,ArrayList<Integer>>>();
 	int r;
 	//Double[] a;
 	Double b;
     int w=3;
     FastMap fm;
+    Task3a obj1;
 
-	public LSH(String inputDir, int K, int L, int r) throws Exception{
+	public LSH(String inputDir, int K, int L) throws Exception{
 
 		this.K=K;
 		this.L=L;
-		this.r=r;
-		rv = new Double[L][K][r];
+		//this.r=r;
 		
 		loadFiles(inputDir);
 		initializeIndexes();
 		//computeDistanceMatrix();
-		fm = new FastMap(r, "", 3);
+		//fm = new FastMap(r, "", 3);
+		
+		obj1 = new Task3a();
+		Task3a.file_list = files;
+		r = obj1.constructFeatureSpaceLSH();
+		rv = new Double[L][K][r];
 	}
 
 	private void initializeIndexes() {
@@ -57,27 +65,32 @@ public class LSH {
 	private void loadFiles(String DirPath) {
 
 		File folder = new File(DirPath);
-		for( File file : folder.listFiles()){
-			files.add(file);
-		}
-		this.N = files.size();
+		files = folder.listFiles();
+		this.N = files.length;
 	}
 
 
 	public void run(){
 
 		//call fastmap on objobj
-		//call matlab to get randomvectors
 		
-		//coordinates = new double[N][r];
-		try {
+		/*try {
 			
 			fm.computeDistanceMatrix(files);
 			coordinates = fm.getReducedSpace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}*/
+		
+		
+		try {
+			coordinates = obj1.constructFeatureVectors();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
 		
 		Double[][] hashes = new Double[N][K];
 		for(int i =0;i<L;i++){
@@ -160,12 +173,13 @@ public class LSH {
 		return Math.sqrt(-2.0 * Math.log(x))*Math.cos(2.0* Math.PI*y);
 	}
 
-	public void search(String filePath, int t){
+	public void search(String filePath, int t) throws IOException{
 		
 	    Hashtable<Integer, Integer> res = new Hashtable<Integer, Integer>();
 	    Double[] hashes= new Double[K];
 	    
-	    double[] queryCoordinates = fm.getQueryCoordinates(filePath);
+	    //double[] queryCoordinates = fm.getQueryCoordinates(filePath);
+	    double[] queryCoordinates = obj1.getQueryCoordinates(new File(filePath));
 	    int vectors =0;
 	    for(int i =0;i<L;i++){
 			
@@ -194,7 +208,7 @@ public class LSH {
 		Iterator<Integer> it =  sortedFileIndexes.iterator();
  	   int i=0;
  	   while(it.hasNext() && i<t) { 
- 		   System.out.println(files.get(it.next()).getName());
+ 		   System.out.println(files[it.next()].getName());
 			i++;
 		}
 	}
@@ -221,7 +235,7 @@ public class LSH {
 			
 			for(int i : res.keySet()){
 			  
-			double sim=	sw.getSimilarityForFiles(3, filePath,files.get(i).getAbsolutePath() );
+			double sim=	sw.getSimilarityForFiles(3, filePath,files[i].getAbsolutePath() );
 			simMap.put(i, sim);
 			}
 			
@@ -256,7 +270,7 @@ public class LSH {
 
 		LSH lsh;
 		try {
-			lsh = new LSH("/home/akshay/Desktop/phase2/word_1", 10, 30,70);
+			lsh = new LSH("/home/akshay/Desktop/phase2/word_1", 5, 30);
 			lsh.run();
 			System.out.println("done");
 			lsh.search("/home/akshay/Desktop/phase2/word/n11.csv", 8);
