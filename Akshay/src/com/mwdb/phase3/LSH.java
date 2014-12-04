@@ -3,7 +3,6 @@ package com.mwdb.phase3;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,8 +31,8 @@ public class LSH {
 	private ArrayList<Hashtable<String, ArrayList<Integer>>> indexes = new ArrayList<Hashtable<String,ArrayList<Integer>>>();
 	int r;
 	//Double[] a;
-	Double b;
-    int w=3;
+	Double[][] b;
+    double w=4;
     FastMap fm;
     Task3a obj1;
 
@@ -52,6 +51,7 @@ public class LSH {
 		Task3a.file_list = files;
 		r = obj1.constructFeatureSpaceLSH();
 		rv = new Double[L][K][r];
+		b = new Double[L][K];
 	}
 
 	private void initializeIndexes() {
@@ -92,17 +92,17 @@ public class LSH {
 		}
 		
 		
-		Double[][] hashes = new Double[N][K];
+		int[][] hashes = new int[N][K];
 		for(int i =0;i<L;i++){
 			
 			
 			for(int j=0;j<K;j++){
 
 				rv[i][j] = getRandomVector();
-				getRandomShift();
+				b[i][j]=getRandomShift();
 
 				for(int n=0;n<N;n++){
-					hashes[n][j]=computeHash(rv[i][j],b,n);
+					hashes[n][j]=computeHash(rv[i][j],b[i][j],n);
 				}
 			}
             buildHashTable(i,hashes);
@@ -110,7 +110,7 @@ public class LSH {
 		}
 	}
 
-	private void buildHashTable(int i, Double[][] hashes) {
+	private void buildHashTable(int i, int[][] hashes) {
 		
 		String key; 
 		
@@ -128,7 +128,7 @@ public class LSH {
 		}
 	}
 
-	private String getHashindex(Double[] hashes) {
+	private String getHashindex(int[] hashes) {
 		
 		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<K; i++){
@@ -137,19 +137,19 @@ public class LSH {
 		return sb.toString();
 	}
 
-	private double computeHash(Double[] a, Double b, int n2) {
+	private int computeHash(Double[] a, Double b, int n2) {
 		
 		double product = 0;
 		   
 		for(int i=0;i<r;i++){
 			product = product + a[i]*coordinates[n2][i];
 		}
-      return Math.floor((product + b)/(double)w );
+      return (int)Math.floor((product + b)/(double)w );
 	}
 
-	private void getRandomShift() {
+	private Double getRandomShift() {
 		
-		b= Math.random() * w;
+		return Math.random() * w;
 	}
 
 	private Double[] getRandomVector() {
@@ -176,7 +176,7 @@ public class LSH {
 	public void search(String filePath, int t) throws IOException{
 		
 	    Hashtable<Integer, Integer> res = new Hashtable<Integer, Integer>();
-	    Double[] hashes= new Double[K];
+	    int[] hashes= new int[K];
 	    
 	    //double[] queryCoordinates = fm.getQueryCoordinates(filePath);
 	    double[] queryCoordinates = obj1.getQueryCoordinates(new File(filePath));
@@ -187,7 +187,7 @@ public class LSH {
 //
 //				getRandomVector();
 				getRandomShift();
-				hashes[j]=computeHashForQuery(rv[i][j],queryCoordinates);
+				hashes[j]=computeHashForQuery(rv[i][j],b[i][j],queryCoordinates);
 			
 			}
 			String key= getHashindex(hashes);
@@ -214,8 +214,8 @@ public class LSH {
 	}
 	
 	
-	private Double computeHashForQuery(Double[] a2,
-			double[] queryCoordinates) {
+	private int computeHashForQuery(Double[] a2,
+			Double b2, double[] queryCoordinates) {
 
 		double product = 0;
 		   
@@ -223,7 +223,7 @@ public class LSH {
 			product = product + a2[i]*queryCoordinates[i];
 		}
 
-		return Math.floor((product + b)/(double)w );
+		return (int)Math.floor((product + b2)/(double)w );
 		
 	}
 
@@ -270,7 +270,7 @@ public class LSH {
 
 		LSH lsh;
 		try {
-			lsh = new LSH("/home/akshay/Desktop/phase2/word_1", 5, 30);
+			lsh = new LSH("/home/akshay/Desktop/phase2/word_1", 14, 40);
 			lsh.run();
 			System.out.println("done");
 			lsh.search("/home/akshay/Desktop/phase2/word/n11.csv", 8);
