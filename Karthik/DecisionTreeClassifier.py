@@ -63,11 +63,14 @@ class DecisionTreeClassifier:
     def load_file_index_map(self):
         self.file_index_file = "/tmp/tem/MWDB-AAAGK/Karthik/DecisionTreeInput/fileindexmap.csv"
         self.index_to_filename_map = {}        
+        self.filename_to_index_map = {}
 
         with open(self.file_index_file, 'r') as file_index_fd:
             for line in file_index_fd.readlines():
                 index, file_name = line.strip().split('-')
-                self.index_to_filename_map[index] = file_name           
+                index = int(index) -1 
+                self.index_to_filename_map[index] = file_name.lstrip('n')    
+                self.filename_to_index_map[file_name.lstrip('n')] = index     
         self.objects_list = self.index_to_filename_map.values()
  
 
@@ -121,28 +124,67 @@ class DecisionTreeClassifier:
         important_features_list = []        
 
         for key_value in important_feature_tuple_list:
-            important_features_list.append(key_value[1]) 
+            important_features_list.append(key_value[0]) 
 
         return important_features_list
-                
+               
+
+    def check_homogenity(self, objects_list):
+        
+        objects_len = len(objects_list)
+        labels_to_count_hash = {}
+
+        for obj in objects_list:
+            label = self.filename_label_hash.get(obj)
+            count = labels_to_count_hash.get(label, 0)
+            count+=1
+            labels_to_count_hash[label] = count
+
+        for label, count in labels_to_count_hash.iteritems():
+            percent = ((float) (count) / objects_len ) * 100 
+            if percent > 80:
+                return True, label
+        
+        return False, 'NA'    
+            
+
+    def split_objects(self, objects_list, features_list, index):
+
+        true_objects_list = []
+        false_objects_list = []        
+        
+
+        feature_index = features_list[index]
+        for obj in objects_list:
+            obj_index = self.filename_to_index_map.get(obj)
+
+            obj_tf_value = self.object_feat_matrix[obj_index][feature_index]
+            feature_threshold = self.feature_index_to_threshold_map.get(feature_index)
+            if obj_tf_value > feature_threshold:
+                true_objects_list.append(obj)
+            else:
+                false_objects_list.append(obj)
+
+        return (true_objects_list, false_objects_list)
+    
+ 
     def form_tree(self, features_list, index, key, objects_list, tree_map):
         is_homogenous, label = self.check_homogenity(objects_list)
 
-        if label:
+        if is_homogenous:
             tree_map[key] = label
             tree_map['leaf'] = True
             return
 
         true_objects_list, false_objects_list = self.split_objects(objects_list, features_list, index)
         new_map = tree_map.setdefault(key, {})
-        form_tree(features_list, index+1, str(index)+'P', true_objects_list, new_map)
-        form_tree(features_list, index+1, str(index)+'N', false_objects_list, new_map)
+        self.form_tree(features_list, index+1, str(index)+'P', true_objects_list, new_map)
+        self.form_tree(features_list, index+1, str(index)+'N', false_objects_list, new_map)
         return tree_map 
 
     def training_phase(self):
         important_features_list = self.get_important_features(self.top_features_count)
         tree_map = {}
-        import pdb;pdb.set_trace()
         decision_tree_map = self.form_tree(important_features_list, 0, 'R', self.objects_list, tree_map)
 
     def classifying_phase(self):
@@ -150,7 +192,7 @@ class DecisionTreeClassifier:
     
     def main(self):
         self.training_phase()
-        self.classifying_phase()
+        #self.classifying_phase()
 
 if __name__ == "__main__":
     dtc = DecisionTreeClassifier()
