@@ -23,7 +23,7 @@ import matlabcontrol.extensions.MatlabTypeConverter;
 public class Task3a {
 
 	public static HashMap<String, Integer> featureIndexMap = new HashMap<String,Integer>();
-	public static HashMap<Double,String> fileIndexMap = new HashMap<Double, String>();
+	public static HashMap<Integer,String> fileIndexMap = new HashMap<Integer, String>();
 	private static final Charset charset = Charset.forName("ISO-8859-1");
 //	private static String pathtofolder = "E:\\MWDB\\sampledata_P1_F14\\sampledata_P1_F14\\Epidemic Simulation Datasets_2\\exec13\\epidemic_word_files";
 	private static String pathtofolder = "E:\\MWDB\\Anil_Kuncham_MWDB_Phase1\\output\\Epidemic Simulation Datasets_50\\epidemic_word_files";
@@ -42,7 +42,7 @@ public class Task3a {
 	{	
 		System.out.println("constructing feature space..");
 		for(int s=0;s<file_list.length;s++){
-			fileIndexMap.put((double) (s+1), file_list[s].getName());
+			fileIndexMap.put(s+1, file_list[s].getName());
 		}
 		System.out.println("FileIndexMap size"+fileIndexMap.size());
 //		File folder = new File(pathtofolder);
@@ -72,12 +72,28 @@ public class Task3a {
 //				}
 			}
 		}
+		
+		PrintWriter fwriter = new PrintWriter("C:\\Users\\ANIL\\Documents\\MATLAB\\fileindexmap.csv");
+		PrintWriter featurewriter = new PrintWriter("C:\\Users\\ANIL\\Documents\\MATLAB\\featureindexmap.csv");
 		//display the contents of map
 		Iterator<Entry<String, Integer>> itr = featureIndexMap.entrySet().iterator();
 	    while (itr.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)itr.next();
 //	        System.out.println(pairs.getKey() + " = " + pairs.getValue());
+	        featurewriter.write(pairs.getKey() + "-" + pairs.getValue());
+	        featurewriter.write("\n");
 	    }
+		
+		Iterator<Map.Entry<Integer, String>> entries = fileIndexMap.entrySet().iterator();
+		while (entries.hasNext()) {
+		  Map.Entry<Integer, String> entry = entries.next();
+		  Integer key = entry.getKey();
+		  String value = entry.getValue();
+		  fwriter.write(key + "-" + value);
+	      fwriter.write("\n");
+		}
+	    fwriter.close();
+	    featurewriter.close();
 	    System.out.println("Size of Feature space "+featureIndexMap.size());
 	    System.out.println("done..");
 	}
