@@ -1,4 +1,4 @@
-import operator, math
+import random, operator, math
 
 class DecisionTreeClassifier:
 
@@ -7,7 +7,7 @@ class DecisionTreeClassifier:
         self.feature_to_gain_value_hash = {}
         self.total_data_entrophy = None
         self.total_data_file_count = 0
-        self.top_features_count = 5
+        self.top_features_count = 47
         self.feature_index_to_threshold_map = {}
 
     def get_entrophy(self, data_files_list):
@@ -129,18 +129,39 @@ class DecisionTreeClassifier:
         return important_features_list
                
 
+    def get_best_major_label(self, major_label, max_count):
+        new_major_label = []
+        
+        for label,count  in major_label:
+            if count < max_count:
+                continue
+            new_major_label.append((label, count))   
+
+        max_len = len(new_major_label)        
+        rand_index = random.randint(0, max_len-1) 
+        return new_major_label[rand_index]
+
     def get_majority_label(self, objects_list):
         objects_len = len(objects_list)    
         labels_to_count_hash = {}
+        max_count = 0
 
         for obj in objects_list:
             label = self.filename_label_hash.get(obj)
             count = labels_to_count_hash.get(label, 0)
             count+=1
+            if count > max_count:
+                max_count = count
             labels_to_count_hash[label] = count
+            
 
-        major_label = sorted(labels_to_count_hash.items(), key=operator.itemgetter(1), reverse=True)[:1]
-        return major_label[0][0]
+        major_label = sorted(labels_to_count_hash.items(), key=operator.itemgetter(1), reverse=True)
+        best_major_label = self.get_best_major_label(major_label, max_count)
+        
+        #print major_label
+        #print best_major_label
+ 
+        return best_major_label[0]
 
     def check_homogenity(self, objects_list):
         
@@ -189,16 +210,18 @@ class DecisionTreeClassifier:
         if (index == self.top_features_count-1):
             leaf_node = True
         major_label = self.get_majority_label(objects_list)
+        #print "Major label - %s" % major_label
 
         is_homogenous, label = self.check_homogenity(objects_list)
-        print index, key, objects_list
 
         if leaf_node and not is_homogenous:
             label = major_label
 
         if is_homogenous or leaf_node:
-            tree_map[key] = label
-            tree_map['leaf'] = True
+            child_map = tree_map.setdefault(key, {})
+            child_map['label'] = label
+            child_map['leaf'] = True
+            #print label
             return
 
         true_objects_list, false_objects_list = self.split_objects(objects_list, features_list, index)
@@ -213,8 +236,7 @@ class DecisionTreeClassifier:
         self.important_features_list = self.get_important_features(self.top_features_count)
         tree_map = {}
         self.decision_tree_map = self.form_tree(self.important_features_list, 0, 'R', self.objects_list, tree_map)
-        print self.decision_tree_map
-        print self.important_features_list
+        #print self.decision_tree_map
 
     def classify(self, object_name, features_list, index, decision_tree):
 
@@ -223,13 +245,13 @@ class DecisionTreeClassifier:
         if true_obj:
             key = str(index)+'P'
             if 'leaf' in decision_tree:
-                return decision_tree.get(key)
+                return decision_tree.get('label')
             child_tree = decision_tree.get(key)
             
         else:
             key = str(index)+'N'
             if 'leaf' in decision_tree:
-                return decision_tree.get(key)    
+                return decision_tree.get('label')    
             child_tree = decision_tree.get(str(index)+'N')
 
         if not child_tree:
@@ -239,10 +261,11 @@ class DecisionTreeClassifier:
                 
 
     def classifying_phase(self):
-        object_name = "52.csv"
-        decision_tree = self.decision_tree_map.get('R')   
-        print self.classify(object_name, self.important_features_list, 0, decision_tree)        
+        for object_name in self.objects_list:
+            decision_tree = self.decision_tree_map.get('R')   
+            print "1,%s,%s" % (object_name, self.classify(object_name, self.important_features_list, 0, decision_tree))        
     
+
     def main(self):
         self.training_phase()
         self.classifying_phase()
