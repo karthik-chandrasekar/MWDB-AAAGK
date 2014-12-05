@@ -32,7 +32,6 @@ class DecisionTreeClassifier:
 
 
     def load_labels(self):
-        self.labels_input_file = "/tmp/tem/MWDB-AAAGK/Karthik/DecisionTreeInput/labels.csv"
         self.filename_label_hash = {}
 
         with open(self.labels_input_file, 'r') as labels_fd:
@@ -44,7 +43,6 @@ class DecisionTreeClassifier:
         
 
     def load_object_feature_matrix(self):
-        self.object_feat_file = "/tmp/tem/MWDB-AAAGK/Karthik/DecisionTreeInput/svdinput.csv"
         self.object_feat_matrix = []        
 
         with open(self.object_feat_file, 'r') as object_feat_fd:
@@ -61,7 +59,6 @@ class DecisionTreeClassifier:
             
 
     def load_file_index_map(self):
-        self.file_index_file = "/tmp/tem/MWDB-AAAGK/Karthik/DecisionTreeInput/fileindexmap.csv"
         self.index_to_filename_map = {}        
         self.filename_to_index_map = {}
 
@@ -73,8 +70,13 @@ class DecisionTreeClassifier:
                 self.filename_to_index_map[file_name.lstrip('n')] = index     
         self.objects_list = self.index_to_filename_map.values()
  
+    def get_input(self):
+        self.labels_input_file = raw_input("Labels path : ").strip()
+        self.object_feat_file = raw_input("Object feat matrix path : ").strip()
+        self.file_index_file = raw_input("File index path : " ).strip()
 
     def load_input_data(self):
+        self.get_input()
         self.load_labels()
         self.load_object_feature_matrix()
         self.load_file_index_map()
@@ -115,7 +117,6 @@ class DecisionTreeClassifier:
         
         for feature in self.features_list:
             self.feature_to_gain_value[feature] = self.get_gain_value(feature)
-
 
     def get_important_features(self, k):
         self.collect_features()
@@ -158,9 +159,6 @@ class DecisionTreeClassifier:
         major_label = sorted(labels_to_count_hash.items(), key=operator.itemgetter(1), reverse=True)
         best_major_label = self.get_best_major_label(major_label, max_count)
         
-        #print major_label
-        #print best_major_label
- 
         return best_major_label[0]
 
     def check_homogenity(self, objects_list):
@@ -186,7 +184,6 @@ class DecisionTreeClassifier:
 
         true_objects_list = []
         false_objects_list = []        
-        
 
         feature_index = features_list[index]
         for obj in objects_list:
@@ -210,7 +207,6 @@ class DecisionTreeClassifier:
         if (index == self.top_features_count-1):
             leaf_node = True
         major_label = self.get_majority_label(objects_list)
-        #print "Major label - %s" % major_label
 
         is_homogenous, label = self.check_homogenity(objects_list)
 
@@ -221,7 +217,6 @@ class DecisionTreeClassifier:
             child_map = tree_map.setdefault(key, {})
             child_map['label'] = label
             child_map['leaf'] = True
-            #print label
             return
 
         true_objects_list, false_objects_list = self.split_objects(objects_list, features_list, index)
@@ -261,14 +256,18 @@ class DecisionTreeClassifier:
                 
 
     def classifying_phase(self):
-        for object_name in self.objects_list:
-            decision_tree = self.decision_tree_map.get('R')   
-            print "1,%s,%s" % (object_name, self.classify(object_name, self.important_features_list, 0, decision_tree))        
+       
+        while 1: 
+            input_file = raw_input("Enter the file to be classified - ").strip()
+            objects_list = [input_file]
+            for object_name in objects_list:
+                decision_tree = self.decision_tree_map.get('R')   
+                print "1,%s,%s" % (object_name, self.classify(object_name, self.important_features_list, 0, decision_tree))        
     
-
     def main(self):
         self.training_phase()
         self.classifying_phase()
+
 
 if __name__ == "__main__":
     dtc = DecisionTreeClassifier()
