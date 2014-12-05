@@ -7,7 +7,7 @@ class DecisionTreeClassifier:
         self.feature_to_gain_value_hash = {}
         self.total_data_entrophy = None
         self.total_data_file_count = 0
-        self.top_features_count = 20
+        self.top_features_count = 5
         self.feature_index_to_threshold_map = {}
 
     def get_entrophy(self, data_files_list):
@@ -129,6 +129,19 @@ class DecisionTreeClassifier:
         return important_features_list
                
 
+    def get_majority_label(self, objects_list):
+        objects_len = len(objects_list)    
+        labels_to_count_hash = {}
+
+        for obj in objects_list:
+            label = self.filename_label_hash.get(obj)
+            count = labels_to_count_hash.get(label, 0)
+            count+=1
+            labels_to_count_hash[label] = count
+
+        major_label = sorted(labels_to_count_hash.items(), key=operator.itemgetter(1), reverse=True)[:1]
+        return major_label[0][0]
+
     def check_homogenity(self, objects_list):
         
         objects_len = len(objects_list)
@@ -142,7 +155,7 @@ class DecisionTreeClassifier:
 
         for label, count in labels_to_count_hash.iteritems():
             percent = ((float) (count) / objects_len ) * 100 
-            if percent > 80:
+            if percent > 60:
                 return True, label
         
         return False, 'NA'    
@@ -169,30 +182,70 @@ class DecisionTreeClassifier:
     
  
     def form_tree(self, features_list, index, key, objects_list, tree_map):
-        is_homogenous, label = self.check_homogenity(objects_list)
+        
+        if not objects_list:return
 
-        if is_homogenous:
+        leaf_node = False
+        if (index == self.top_features_count-1):
+            leaf_node = True
+        major_label = self.get_majority_label(objects_list)
+
+        is_homogenous, label = self.check_homogenity(objects_list)
+        print index, key, objects_list
+
+        if leaf_node and not is_homogenous:
+            label = major_label
+
+        if is_homogenous or leaf_node:
             tree_map[key] = label
             tree_map['leaf'] = True
             return
 
         true_objects_list, false_objects_list = self.split_objects(objects_list, features_list, index)
         new_map = tree_map.setdefault(key, {})
+        
+        new_map['default'] = major_label
         self.form_tree(features_list, index+1, str(index)+'P', true_objects_list, new_map)
         self.form_tree(features_list, index+1, str(index)+'N', false_objects_list, new_map)
         return tree_map 
 
     def training_phase(self):
-        important_features_list = self.get_important_features(self.top_features_count)
+        self.important_features_list = self.get_important_features(self.top_features_count)
         tree_map = {}
-        decision_tree_map = self.form_tree(important_features_list, 0, 'R', self.objects_list, tree_map)
+        self.decision_tree_map = self.form_tree(self.important_features_list, 0, 'R', self.objects_list, tree_map)
+        print self.decision_tree_map
+        print self.important_features_list
+
+    def classify(self, object_name, features_list, index, decision_tree):
+
+        true_obj, false_obj = self.split_objects([object_name], self.important_features_list, index)
+        
+        if true_obj:
+            key = str(index)+'P'
+            if 'leaf' in decision_tree:
+                return decision_tree.get(key)
+            child_tree = decision_tree.get(key)
+            
+        else:
+            key = str(index)+'N'
+            if 'leaf' in decision_tree:
+                return decision_tree.get(key)    
+            child_tree = decision_tree.get(str(index)+'N')
+
+        if not child_tree:
+            return decision_tree.get('default')
+        
+        return self.classify(object_name, features_list, index+1, child_tree)
+                
 
     def classifying_phase(self):
-        self.classifiy()        
+        object_name = "52.csv"
+        decision_tree = self.decision_tree_map.get('R')   
+        print self.classify(object_name, self.important_features_list, 0, decision_tree)        
     
     def main(self):
         self.training_phase()
-        #self.classifying_phase()
+        self.classifying_phase()
 
 if __name__ == "__main__":
     dtc = DecisionTreeClassifier()
