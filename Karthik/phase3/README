@@ -1,0 +1,25 @@
+1.
+Dependent files SimilarityWrapper.java, Task1_c_d_e.java are expected to be present
+javac Classifier.py
+java Classifier
+
+Enter the label file path
+/tmp/tem/MWDB-AAAGK/Karthik/DecisionTreeInput/labels.csv
+Enter input data files directory
+/tmp/tem/MWDB-AAAGK/Karthik/DecisionTreeInput/KNNInput/word_files
+Enter the parameter K 
+5
+Enter query file path
+/tmp/tem/MWDB-AAAGK/Karthik/DecisionTreeInput/KNNInput/word_files/n92.csv
+Predicted Label-2
+
+
+
+2.
+python DecisionTreeClassifier.py 
+Labels path : labels.csv
+Object feat matrix path : svdinput.csv
+File index path : fileindexmap.csv
+Enter the file to be classified - 99.csv
+99.csv,3
+
