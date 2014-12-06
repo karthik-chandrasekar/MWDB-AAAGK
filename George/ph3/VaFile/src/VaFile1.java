@@ -23,8 +23,10 @@ public class VaFile1 {
 		this.bLength = bLength;
 		this.vaFileEntryMap = new HashMap<Long, VaFileEntry>();
 		List <String>uniqueLines = this.getUniqueLines(epiFileName);
-		List<Float> line1Vect = new Vector(uniqueLines.get(0)).getVector();
-	
+		List<Float> line1Vect = null;
+		if(uniqueLines.size() > 0) {
+			line1Vect = new Vector(uniqueLines.get(0)).getVector();
+		}
 		// Size of vector in line 1 equals dimensions
 		for(int dim = 0; dim < line1Vect.size(); dim++) {
 			dimMax.add(dim, line1Vect.get(dim));

@@ -37,7 +37,7 @@ public class RankGeneratorTest {
 		resultVectors.add(closest1);
 		resultVectors.add(closest2);
 		
-		RankGenerator rankG = new RankGenerator(queryVectors, distances, resultVectors, 2);
+		RankGenerator rankG = new RankGenerator(queryVectors, 2);
 		System.out.println(rankG.getTopK());
 	}
 }

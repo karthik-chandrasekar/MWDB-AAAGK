@@ -35,28 +35,28 @@ public class VaFileEntry {
 	private List<Float> calcDimLength(List<Float> minVal, List<Float> maxVal) {
 		List<Float> dimLength = new ArrayList<Float>();
 		for(int i = 0; i < minVal.size(); i++) {
-			float range = maxVal.get(i) - minVal.get(i);
-			int bitsPerDim = getBitsPerDim(i, this.noOfBits, this.noOfDims);
-			float dimLen = getDimLen(range, bitsPerDim);
-			dimLength.add(dimLen);
+			float range = maxVal.get(i) - minVal.get(i); // gets the diffrence between the maximum value and minimm value in a dimension
+			int bitsPerDim = getBitsPerDim(i, this.noOfBits, this.noOfDims); // for dimension i , get the number of bits
+			float dimLen = getDimLen(range, bitsPerDim); //dimlen is the partition length
+			dimLength.add(dimLen); // adds the partition length to the list
 		}
-		return dimLength;
+		return dimLength; // each dimension along with its partition length
 	}
 
 	private float getDimLen(float range, int bitsPerDim) {
 		// TODO Auto-generated method stub
 		int totRegions = (int) Math.pow(2, bitsPerDim);
-		return (range/totRegions);
+		return (range/totRegions); // returns each partition length for the particular dimension
 	}
 
 	private int getBitsPerDim(int i, int noOfBits, int noOfDims) {
 		int dimLen = 0;
 		int minPerDim = noOfBits / noOfDims;
 		int remain    = noOfBits % noOfDims;
-		if (i < remain) {
+		if (i < remain) { // if i is in the first few dimension, it accommodates the left over bits 
 			dimLen ++;
 		}
-		dimLen += minPerDim;
+		dimLen += minPerDim; // only the first few dimensions accommodate the left over bits (dimLen) 
 		return dimLen;
 	}
 	
@@ -97,13 +97,7 @@ public class VaFileEntry {
 		}
 		return compBin;
 	}
-	/***
-	 * 
-	 * @param vector - The vector whose Region is to be found.
-	 * @param minVal - The list of Minimum Values for each dimension
-	 * @param dimLen - The length in each dimension
-	 * @return - The region Numbers corresponding to the regionData. 
-	 */
+	
 	private List<Integer> getRegionData(Vector vector, List<Float> minVal, List<Float> dimLen) {
 		// This computes the values of the vector.
 		// Returns the region Number it Corresponds to.
@@ -113,21 +107,22 @@ public class VaFileEntry {
 		
 		int region;
 		for(int dimNo = 0; dimNo < noOfDims; dimNo++) {
-			float vectVal = vectMag.get(dimNo);
-			float min  = minVal.get(dimNo);
-			float dimLength = dimLen.get(dimNo);
+			float vectVal = vectMag.get(dimNo); // vector value for the dimension dimNo
+			float min  = minVal.get(dimNo); // least value in the dimension
+			float dimLength = dimLen.get(dimNo); // space/length between two partitions in a dimension
+			
 			if(dimLength != 0) {
-				region = (int)((vectVal - min)/dimLength);
+//				System.out.println("----------------------");
+//				System.out.println("For dim : " + dimNo);
+//				System.out.println("vectval : " + vectVal);
+//				System.out.println("min : " + min);
+//				System.out.println("dimLength : " + dimLength);
+				region = (int)((vectVal - min)/dimLength); // partition starting point
+//				System.out.println("region : " + region );
 			} else {
 				region = 0;
 			}
 			regData.add(dimNo, region); // adds the starting partition point per dimension
-			
-			// Last point(MaxPoint) is to be included in the last region as the boundary includes it.
-			if(region == noOfDims) {
-				region --;
-			}
-			regData.add(dimNo, region);
 		}
 		return regData;
 	}

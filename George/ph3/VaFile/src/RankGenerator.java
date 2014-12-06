@@ -14,18 +14,13 @@ import java.util.TreeMap;
  */
 public class RankGenerator {
 
-	private List <Vector> queryVectors;
-	private List <Float> distances;
 	private List <Vector> resultVector;
 	
 	private List<String> topK;
 	private int k;
 	
-	public RankGenerator(List<Vector> queryVectors, List<Float> distances,
-			List<Vector> resultVector, int k) {
+	public RankGenerator(List<Vector> resultVector, int k) {
 		super();
-		this.queryVectors = queryVectors;
-		this.distances = distances;
 		this.resultVector = resultVector;
 		this.k = k;
 		this.topK = this.getTopKFileFactor();
@@ -41,9 +36,9 @@ public class RankGenerator {
 		Map<String, Integer> rankCount = new HashMap<String, Integer>();
 		// Have a map Of Files to the Vectors.
 		// When a file is encountered add the distance corresponding to it.
-		for(int i=0 ; i < queryVectors.size(); i++) {
+		for(int i=0 ; i < resultVector.size(); i++) {
 			Vector closest = resultVector.get(i);
-			Float dist = distances.get(i);
+			Float dist = closest.getDistance();
 			String file = (String) closest.getFile();
 			if(rankList.containsKey(file)) {
 				rankCount.put(file, rankCount.get(file) + 1);

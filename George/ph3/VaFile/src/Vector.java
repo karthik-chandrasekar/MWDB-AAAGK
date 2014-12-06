@@ -7,6 +7,7 @@ public class Vector {
 	String State;
 	String time;
 	List<Float> vector;
+	Float distance;
 	List<Float> LiPerFile;
 	public List<Float> getLiPerFile() {
 		return LiPerFile;
@@ -23,6 +24,16 @@ public class Vector {
 	public void setVectorID(int vectorID) {
 		this.vectorID = vectorID;
 	}
+
+	public Float getDistance() {
+		return distance;
+	}
+
+	public void setDistance(Float distance) {
+		this.distance = distance;
+	}
+
+
 
 	List<Float> UiPerFile;
 	int vectorID;
@@ -64,7 +75,9 @@ public class Vector {
 
 	@Override
 	public String toString() {
-		return "Vector [file=" + file + ", State=" + State + ", Time=" + time
-				+ ", vector=" + vector + "]";
+		return "Vector [file=" + file + ", State=" + State + ", time=" + time
+				+ ", vector=" + vector + ", distance=" + distance
+				+ ", LiPerFile=" + LiPerFile + ", UiPerFile=" + UiPerFile
+				+ ", vectorID=" + vectorID + "]";
 	}
 }
