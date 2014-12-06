@@ -11,10 +11,10 @@ import java.util.Map;
  */
 public class VaFile1 {
 
-	private List<Float>dimMax; 
-	private List<Float>dimMin;
-	private Map<Long,VaFileEntry> vaFileEntryMap;
-	private int bLength;
+	List<Float>dimMax; 
+	List<Float>dimMin;
+	Map<Long,VaFileEntry> vaFileEntryMap;
+	int bLength;
 	
 	public VaFile1(int bLength, String epiFileName) {
 		// Get Unique lines out

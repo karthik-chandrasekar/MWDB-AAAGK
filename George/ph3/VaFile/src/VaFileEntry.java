@@ -9,6 +9,15 @@ public class VaFileEntry {
 	public List<Float> minList; 
 	public List<Float> dimLength;
 	public List<Float> maxList;
+	public List<Integer> regionData;
+
+	public List<Integer> getRegionData() {
+		return regionData;
+	}
+
+	public void setRegionData(List<Integer> regionData) {
+		this.regionData = regionData;
+	}
 
 	private int noOfDims;
 	private int noOfBits;
@@ -63,7 +72,7 @@ public class VaFileEntry {
 	}
 
 	private String calcCode(Vector vector) {
-		List<Integer> regionData = getRegionData(vector, this.minList, this.dimLength);
+		regionData = getRegionData(vector, this.minList, this.dimLength);
 		return getCode(regionData, this.dimLength, this.noOfBits);
 	}
 	
@@ -112,6 +121,7 @@ public class VaFileEntry {
 			} else {
 				region = 0;
 			}
+			regData.add(dimNo, region); // adds the starting partition point per dimension
 			
 			// Last point(MaxPoint) is to be included in the last region as the boundary includes it.
 			if(region == noOfDims) {
