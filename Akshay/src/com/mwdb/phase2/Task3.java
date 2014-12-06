@@ -34,9 +34,9 @@ public class Task3
 		//Initialize matlab factory class
 		
 		System.out.println("Launching Matlab and Initializing workspace");
-		factory = new MatlabProxyFactory();
+		/*factory = new MatlabProxyFactory();
 		proxy = factory.getProxy();
-		
+		*/
 		
 		// Code block for Interactive console input and invoke corresponding class objects
 		

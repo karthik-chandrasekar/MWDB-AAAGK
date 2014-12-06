@@ -55,6 +55,7 @@ public class Task3a {
 				String[] rvalues = rows.get(i).split(",");
 				StringBuilder word = new StringBuilder();
 				StringBuilder timeword = new StringBuilder();
+				StringBuilder stateword = new StringBuilder();
 				for(int j=3;j<rvalues.length;j++){
 					word.append(rvalues[j]);
 					word.append(",");
@@ -63,6 +64,11 @@ public class Task3a {
 				timeword.append(rvalues[2]+"_");
 				timeword.append(vword);
 				String tword = timeword.toString();
+				
+				stateword.append(rvalues[1]+"_");
+				stateword.append(vword);
+				String sword = stateword.toString();
+				
 				if(!featureIndexMap.containsKey(vword)){
 					featureIndexMap.put(vword, index);
 					index++;
@@ -99,18 +105,33 @@ public class Task3a {
 				String[] rvalues = rows.get(i).split(",");
 				StringBuilder word = new StringBuilder();
 				StringBuilder timeword = new StringBuilder();
+				StringBuilder stateword = new StringBuilder();
 				for(int j=3;j<rvalues.length;j++){
 					word.append(rvalues[j]);
 					word.append(",");
 				}
 				String vword = word.toString();
-				timeword.append(rvalues[2]+"_");
+				/*timeword.append(rvalues[2]+"_");
 				timeword.append(vword);
 				String tword = timeword.toString();
-				if(!featureIndexMap.containsKey(vword)){
+				*/
+				stateword.append(rvalues[1]+"_");
+				stateword.append(vword);
+				String sword = stateword.toString();
+				
+				/*if(!featureIndexMap.containsKey(vword)){
 					featureIndexMap.put(vword, index);
 					index++;
+				}*/
+				if(!featureIndexMap.containsKey(sword)){
+					featureIndexMap.put(sword, index);
+					index++;
 				}
+				
+				/*if(!featureIndexMap.containsKey(vword)){
+					featureIndexMap.put(vword, index);
+					index++;
+				}*/
 //				if(!featureIndexMap.containsKey(tword)){
 //					featureIndexMap.put(tword, index);
 //					index++;
@@ -130,7 +151,7 @@ public class Task3a {
 	//Function to construct feature vectors to be passed as input to SVD calc function
 	public void constructFeatureVectorsSVD() throws IOException{ 
 		System.out.println("Constructing Obj-Feature Matrix");
-		//PrintWriter swriter = new PrintWriter("/home/akshay/svdinput.csv");
+		PrintWriter swriter = new PrintWriter("/home/akshay/svdinput.csv");
 		double[][] coordinates = new double[file_list.length][featureIndexMap.size()];
 		HashMap<Integer, Integer> fvectorMap = new HashMap<Integer,Integer>();
 		for(int n=0;n<file_list.length;n++){
@@ -170,25 +191,25 @@ public class Task3a {
 //					}
 //				}
 			}
-			//StringBuilder fvectorwriter = new StringBuilder();
+			StringBuilder fvectorwriter = new StringBuilder();
 			int featurespaceSize = featureIndexMap.size();
 			for(int k=1;k<=featurespaceSize;k++){
 				if(fvectorMap.containsKey(k)){
 					
-					coordinates[n][k-1] = fvectorMap.get(k);
-					/*fvectorwriter.append(fvectorMap.get(k));
-					fvectorwriter.append(",");*/
+					//coordinates[n][k-1] = fvectorMap.get(k);
+					fvectorwriter.append(fvectorMap.get(k));
+					fvectorwriter.append(",");
 				}
 				else{
-					coordinates[n][k-1] = 0;
-					/*fvectorwriter.append("0");
-					fvectorwriter.append(",");*/
+					//coordinates[n][k-1] = 0;
+					fvectorwriter.append("0");
+					fvectorwriter.append(",");
 				}
 			}
-			/*String output = fvectorwriter.toString();
+			String output = fvectorwriter.toString();
 			output = output.substring(0,output.length()-1);
 			swriter.write(output);
-			swriter.write("\n")*/;
+			swriter.write("\n");
 			fvectorMap.clear();
 		}
 		//swriter.close();
@@ -219,8 +240,14 @@ public class Task3a {
 				timeword.append(rvalues[2]+"_");
 				timeword.append(vword);
 				String tword = timeword.toString();*/
-				if(featureIndexMap.containsKey(vword)){
-					int localindex = featureIndexMap.get(vword);
+				StringBuilder stateword = new StringBuilder();
+				stateword.append(rvalues[1]+"_");
+				stateword.append(vword);
+				String sword = stateword.toString();
+				
+				
+				if(featureIndexMap.containsKey(sword)){
+					int localindex = featureIndexMap.get(sword);
 					if(!fvectorMap.containsKey(localindex)){
 						fvectorMap.put(localindex, 1);
 					}
@@ -283,8 +310,15 @@ public class Task3a {
 			timeword.append(rvalues[2]+"_");
 			timeword.append(vword);
 			String tword = timeword.toString();*/
-			if(featureIndexMap.containsKey(vword)){
-				int localindex = featureIndexMap.get(vword);
+			
+			StringBuilder stateword = new StringBuilder();
+			stateword.append(rvalues[1]+"_");
+			stateword.append(vword);
+			String sword = stateword.toString();
+			
+			
+			if(featureIndexMap.containsKey(sword)){
+				int localindex = featureIndexMap.get(sword);
 				if(!fvectorMap.containsKey(localindex)){
 					fvectorMap.put(localindex, 1);
 				}
