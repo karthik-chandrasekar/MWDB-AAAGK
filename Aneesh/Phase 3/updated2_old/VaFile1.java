@@ -1,3 +1,5 @@
+package updated2;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
@@ -31,13 +33,16 @@ public class VaFile1 {
 			dimMin.add(dim, line1Vect.get(dim));
 		}
 		
-		for(String line : uniqueLines) {
+		for(String line : uniqueLines) { // to get the minimum and maximum values for each dimension by iterating through all vectors
 			this.updateMinMaxDims(new Vector(line));
 		}
-		
+		int i = 0;
 		for(String line : uniqueLines) {
 			Vector vector =  new Vector(line);
-			VaFileEntry vaFileEntry = new VaFileEntry(vector, dimMin, dimMax, dimMax.size(), bLength);
+//			System.out.println("----------------------");
+//			System.out.println("Unique line : " + i++ + " : " + line);
+			
+			VaFileEntry vaFileEntry = new VaFileEntry(vector, dimMin, dimMax, dimMax.size(), bLength); //dimMax.size() represents number of rows or dimensions
 			long key = Long.parseLong(vaFileEntry.getCode(), 2);
 			if(vaFileEntryMap.containsKey(key) == true) {
 				vaFileEntryMap.get(key).getEntries().add(vector);
@@ -54,8 +59,9 @@ public class VaFile1 {
 			Float dimValue = dimValList.get(dim);
 			if(dimMax.get(dim) < dimValue) {
 				dimMax.set(dim, dimValue);
-			} else if (dimMax.get(dim) > dimValue) {
-				dimMax.set(dim, dimValue);
+			} 
+			if(dimMin.get(dim) > dimValue){
+				dimMin.set(dim, dimValue);
 			}
 		}
 	}
@@ -94,6 +100,7 @@ public class VaFile1 {
 			while ((line = br.readLine()) != null) {
 				String bufferLine = line.substring(6);
 				if(bufferWords.contains(bufferLine) == false) {
+					//System.out.println(line);
 					uniqueWords.add(line);
 					bufferWords.add(bufferLine);
 				}

@@ -7,6 +7,26 @@ public class Vector {
 	String State;
 	String time;
 	List<Float> vector;
+	List<Float> LiPerFile;
+	public List<Float> getLiPerFile() {
+		return LiPerFile;
+	}
+
+	public void setLiPerFile(List<Float> liPerFile) {
+		LiPerFile = liPerFile;
+	}
+
+	public int getVectorID() {
+		return vectorID;
+	}
+
+	public void setVectorID(int vectorID) {
+		this.vectorID = vectorID;
+	}
+
+	List<Float> UiPerFile;
+	int vectorID;
+	
 	
 	public Vector(String line) {
 	    String words[] = line.split(",");
@@ -44,6 +64,7 @@ public class Vector {
 
 	@Override
 	public String toString() {
-		return "Vector [vector=" + vector + "]";
+		return "Vector [file=" + file + ", State=" + State + ", Time=" + time
+				+ ", vector=" + vector + "]";
 	}
 }

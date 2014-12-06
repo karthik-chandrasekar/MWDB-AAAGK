@@ -16,14 +16,13 @@ public class VaFileRunner {
 		String filePath = new File("").getAbsolutePath();
 		
 		//read the query vector and get the list of vectors
-		VaFile1 vaQueryObject = new VaFile1(20, filePath.concat("/src/updated2/sim/epidemic_word_files/diffn16.csv"));
+		VaFile1 vaQueryObject = new VaFile1(20, filePath.concat("/src/updated2/sim/epidemic_word_files/avgn2.csv"));
 		//System.out.println("Size of VaFile : " + vaQueryObject.getSize() + "bytes");
 		
 		List<Vector> queryVectors  = getQueryVectors(vaQueryObject);
 		
-		
 		//read file 1 and get the VAFile object whch ahs all the VAs
-		VaFile1 vaFileObj = new VaFile1(20, filePath.concat("/src/updated2/sim/epidemic_word_files/avgn3.csv"));
+		VaFile1 vaFileObj = new VaFile1(20, filePath.concat("/src/updated2/sim/epidemic_word_files/avgn2.csv"));
 		System.out.println("Size of VaFile : " + vaFileObj.getSize() + "bytes");
 		
 		
@@ -47,7 +46,7 @@ public class VaFileRunner {
 			vaQ = (VaFileEntry) pairs.getValue();
 			
 			for(int i = 0 ; i < vaQ.getEntries().size() ; i++ ){
-				//System.out.println(vaQ.getEntries().get(i));
+				System.out.println(vaQ.getEntries().get(i));
 				queryV.add(   vaQ.getEntries().get(i)   );
 			}
 						
