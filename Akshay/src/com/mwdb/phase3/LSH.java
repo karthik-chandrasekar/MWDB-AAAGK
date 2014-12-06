@@ -3,6 +3,7 @@ package com.mwdb.phase3;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import com.mwdb.phase2.FastMap;
@@ -32,15 +34,15 @@ public class LSH {
 	int r;
 	//Double[] a;
 	Double[][] b;
-    double w=4;
+    double w=1000;
     FastMap fm;
     Task3a obj1;
-
+    Random random = new Random();
 	public LSH(String inputDir, int K, int L) throws Exception{
 
 		this.K=K;
 		this.L=L;
-		//this.r=r;
+		//this.r=70;
 		
 		loadFiles(inputDir);
 		initializeIndexes();
@@ -50,7 +52,7 @@ public class LSH {
 		obj1 = new Task3a();
 		Task3a.file_list = files;
 		r = obj1.constructFeatureSpaceLSH();
-		rv = new Double[L][K][r];
+    	rv = new Double[L][K][r];
 		b = new Double[L][K];
 	}
 
@@ -76,7 +78,7 @@ public class LSH {
 		
 		/*try {
 			
-			fm.computeDistanceMatrix(files);
+			fm.computeDistanceMatrix(new ArrayList<File>(Arrays.asList(files)));
 			coordinates = fm.getReducedSpace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -99,7 +101,7 @@ public class LSH {
 			for(int j=0;j<K;j++){
 
 				rv[i][j] = getRandomVector();
-				b[i][j]=getRandomShift();
+				b[i][j] = getRandomShift();
 
 				for(int n=0;n<N;n++){
 					hashes[n][j]=computeHash(rv[i][j],b[i][j],n);
@@ -108,6 +110,23 @@ public class LSH {
             buildHashTable(i,hashes);
        
 		}
+		
+		computeIndexSize();
+	}
+
+	private void computeIndexSize() {
+
+		int indexSize = 0;
+		
+		for(Hashtable<String, ArrayList<Integer>> h : indexes){
+			for(String k : h.keySet()){
+				indexSize = indexSize + k.getBytes().length;
+			}
+		}
+		
+		indexSize = indexSize + N*L*32;
+		
+		System.out.println("Index Structure size in bytes: "+ indexSize);
 	}
 
 	private void buildHashTable(int i, int[][] hashes) {
@@ -162,15 +181,18 @@ public class LSH {
 
 	private Double getGaussianRandom() {
 	
+		
 		double x,y;
 		do{
-		 x = Math.random();
+		 x = random.nextGaussian() ;
 		}while(x==0);
 		do{	
 		y = Math.random();
 		}while(y==0);
 		
-		return Math.sqrt(-2.0 * Math.log(x))*Math.cos(2.0* Math.PI*y);
+		//return Math.sqrt(-2.0 * Math.log(x))*Math.cos(2.0* Math.PI*y) * w;
+
+	    return x * w ;	
 	}
 
 	public void search(String filePath, int t) throws IOException{
@@ -181,18 +203,20 @@ public class LSH {
 	    //double[] queryCoordinates = fm.getQueryCoordinates(filePath);
 	    double[] queryCoordinates = obj1.getQueryCoordinates(new File(filePath));
 	    int vectors =0;
+	    int indexAccessed = 0;
 	    for(int i =0;i<L;i++){
 			
 			for(int j=0;j<K;j++){
 //
 //				getRandomVector();
-				getRandomShift();
+				//getRandomShift();
 				hashes[j]=computeHashForQuery(rv[i][j],b[i][j],queryCoordinates);
 			
 			}
 			String key= getHashindex(hashes);
 			ArrayList<Integer> list = indexes.get(i).get(key);
 			if(list!=null){
+				indexAccessed = indexAccessed + key.getBytes().length;
 				vectors = vectors + list.size();
 			for(int p :list){
 				if(!res.contains(p))
@@ -200,9 +224,11 @@ public class LSH {
 			}
 			}
 		}
+	    indexAccessed = indexAccessed + vectors * 32;
+	    System.out.println("Bytes accessed: "+ indexAccessed);
 	    System.out.println("Total vectors considered : "+ vectors);
 	    System.out.println("unique vectors : "+ res.size());
-	    Set<Integer> sortedFileIndexes = findSimilarity(res,filePath);
+	    Set<Integer> sortedFileIndexes = findSimilarity(res,filePath,queryCoordinates);
 		System.out.println("Similar simulations: ");
 	   
 		Iterator<Integer> it =  sortedFileIndexes.iterator();
@@ -211,6 +237,8 @@ public class LSH {
  		   System.out.println(files[it.next()].getName());
 			i++;
 		}
+ 	   
+ 	  
 	}
 	
 	
@@ -227,7 +255,7 @@ public class LSH {
 		
 	}
 
-	private Set<Integer> findSimilarity(Hashtable<Integer, Integer> res, String filePath) {
+	private Set<Integer> findSimilarity(Hashtable<Integer, Integer> res, String filePath, double[] queryCoordinates) {
 		
 		HashMap<Integer, Double> simMap = new HashMap<Integer, Double>();
 		try {
@@ -235,8 +263,9 @@ public class LSH {
 			
 			for(int i : res.keySet()){
 			  
-			double sim=	sw.getSimilarityForFiles(3, filePath,files[i].getAbsolutePath() );
-			simMap.put(i, sim);
+			//double sim=	sw.getSimilarityForFiles(3, filePath,files[i].getAbsolutePath() );
+			double sim = getEuclideanDistances(coordinates[i], queryCoordinates);
+				simMap.put(i, sim);
 			}
 			
 		} catch (Exception e) {
@@ -248,13 +277,25 @@ public class LSH {
 		return simMap.keySet();
 	}
 
+	// calculates euclidean distance between two coordinates
+		private double getEuclideanDistances(double[] newCoordiantes,
+					double[] coordinates2) {
+	  
+				double distance =0;
+				for(int i=0;i<r;i++){
+			    distance = distance + Math.pow(coordinates2[i]-newCoordiantes[i], 2);		
+				}
+				
+				return Math.sqrt(distance);
+			}
+
 	private static HashMap sortByValues(HashMap map) { 
 	       List list = new LinkedList(map.entrySet());
 	       
 	       Collections.sort(list, new Comparator() {
 	            public int compare(Object o1, Object o2) {
-	               return ((Comparable) ((Map.Entry) (o2)).getValue())
-	                  .compareTo(((Map.Entry) (o1)).getValue());
+	               return ((Comparable) ((Map.Entry) (o1)).getValue())
+	                  .compareTo(((Map.Entry) (o2)).getValue());
 	            }
 	       });
 
@@ -270,10 +311,10 @@ public class LSH {
 
 		LSH lsh;
 		try {
-			lsh = new LSH("/home/akshay/Desktop/phase2/word_1", 14, 40);
+			lsh = new LSH("/home/akshay/Desktop/wordfiles", 10, 40);
 			lsh.run();
 			System.out.println("done");
-			lsh.search("/home/akshay/Desktop/phase2/word/n11.csv", 8);
+			lsh.search("/home/akshay/Desktop/wordfiles/8.csv", 8);
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
