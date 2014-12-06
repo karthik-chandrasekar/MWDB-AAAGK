@@ -35,6 +35,8 @@ class KNNClassifier
     
     void loadFileLabelHash(File labelFile) throws Exception
     {
+        //Load the file label hash 
+        
         fileLabelHash = new HashMap<String, String>();
         Scanner scannerObj = new Scanner(labelFile);
         int count = 0;
@@ -55,6 +57,7 @@ class KNNClassifier
     
     String findTopSimilarityFiles(String inputDirectory, String queryFilePath, int topK, String labelFilePath) throws Exception
     {
+        //Find the top similarity files for the given file
         //Loading file label hash
         File labelFile = new File(labelFilePath);
         loadFileLabelHash(labelFile);
@@ -154,10 +157,13 @@ public static void main(String args[]) throws Exception {
     
         while(true)
         {
+            System.out.println("Enter the parameter K ");
+            topK = Integer.parseInt(scannerObj.nextLine());
+            
             System.out.println("Enter query file path");
             queryFile = scannerObj.nextLine();
             predictedClass = knnclassifierObj.findTopSimilarityFiles(inputDirectory, queryFile, topK, labelFilePath);
-            System.out.println("PredictedClass " + predictedClass);
+            System.out.println("Predicted Label" + "-" + predictedClass);
         }
     }
 }
