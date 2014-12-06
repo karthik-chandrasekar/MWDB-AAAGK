@@ -7,10 +7,12 @@ class DecisionTreeClassifier:
         self.feature_to_gain_value_hash = {}
         self.total_data_entrophy = None
         self.total_data_file_count = 0
-        self.top_features_count = 47
         self.feature_index_to_threshold_map = {}
+        self.homogeneity_threshold = 75
 
     def get_entrophy(self, data_files_list):
+        #Entropy calculation function
+
         label_count_hash = {}
         entrophy = 0        
         files_count = len(data_files_list)
@@ -40,9 +42,12 @@ class DecisionTreeClassifier:
                     continue
                 file_name, label = line.strip().split(',')
                 self.filename_label_hash[file_name] = label
+        self.objects_list = self.filename_label_hash.keys()
         
 
     def load_object_feature_matrix(self):
+        #Load object feature matrix
+
         self.object_feat_matrix = []        
 
         with open(self.object_feat_file, 'r') as object_feat_fd:
@@ -68,14 +73,16 @@ class DecisionTreeClassifier:
                 index = int(index) -1 
                 self.index_to_filename_map[index] = file_name.lstrip('n')    
                 self.filename_to_index_map[file_name.lstrip('n')] = index     
-        self.objects_list = self.index_to_filename_map.values()
- 
+        self.all_objects_list = self.filename_to_index_map.keys()    
+
+     
     def get_input(self):
         self.labels_input_file = raw_input("Labels path : ").strip()
         self.object_feat_file = raw_input("Object feat matrix path : ").strip()
         self.file_index_file = raw_input("File index path : " ).strip()
 
     def load_input_data(self):
+        #Load the necessary input data
         self.get_input()
         self.load_labels()
         self.load_object_feature_matrix()
@@ -86,7 +93,7 @@ class DecisionTreeClassifier:
         self.get_total_data_entrophy()
 
     def get_pruned_data(self, feature):
-        #reutrn files that has feature tf value greater than threshold [Median]
+        #reutrn files that has feature tf value greater than threshold [Mean]
        
         tf_value_list = []
         output_list = []       
@@ -118,10 +125,10 @@ class DecisionTreeClassifier:
         for feature in self.features_list:
             self.feature_to_gain_value[feature] = self.get_gain_value(feature)
 
-    def get_important_features(self, k):
+    def get_important_features(self):
         self.collect_features()
         self.get_feature_importance()
-        important_feature_tuple_list = sorted(self.feature_to_gain_value.items(), key=operator.itemgetter(1), reverse=True)[:k]
+        important_feature_tuple_list = sorted(self.feature_to_gain_value.items(), key=operator.itemgetter(1), reverse=True)[:self.feat_count]
         important_features_list = []        
 
         for key_value in important_feature_tuple_list:
@@ -162,7 +169,8 @@ class DecisionTreeClassifier:
         return best_major_label[0]
 
     def check_homogenity(self, objects_list):
-        
+        #Checks if given set of files are homogenous or not
+
         objects_len = len(objects_list)
         labels_to_count_hash = {}
 
@@ -174,13 +182,14 @@ class DecisionTreeClassifier:
 
         for label, count in labels_to_count_hash.iteritems():
             percent = ((float) (count) / objects_len ) * 100 
-            if percent > 60:
+            if percent > self.homogeneity_threshold:
                 return True, label
         
         return False, 'NA'    
             
 
     def split_objects(self, objects_list, features_list, index):
+        #Split the objects list into two list one which satisifies thershold and other which do not 
 
         true_objects_list = []
         false_objects_list = []        
@@ -196,15 +205,17 @@ class DecisionTreeClassifier:
             else:
                 false_objects_list.append(obj)
 
+
         return (true_objects_list, false_objects_list)
     
  
     def form_tree(self, features_list, index, key, objects_list, tree_map):
-        
+        #Recursive function which forms decision tree    
+
         if not objects_list:return
 
         leaf_node = False
-        if (index == self.top_features_count-1):
+        if (index == self.feat_count-1):
             leaf_node = True
         major_label = self.get_majority_label(objects_list)
 
@@ -228,7 +239,8 @@ class DecisionTreeClassifier:
         return tree_map 
 
     def training_phase(self):
-        self.important_features_list = self.get_important_features(self.top_features_count)
+        #Decision tree is built from the training data in this phase
+        self.important_features_list = self.get_important_features()
         tree_map = {}
         self.decision_tree_map = self.form_tree(self.important_features_list, 0, 'R', self.objects_list, tree_map)
         #print self.decision_tree_map
@@ -256,13 +268,13 @@ class DecisionTreeClassifier:
                 
 
     def classifying_phase(self):
-       
+        #From the decision tree formed during training phase, try to predict the label for the given object file. 
         while 1: 
             input_file = raw_input("Enter the file to be classified - ").strip()
             objects_list = [input_file]
             for object_name in objects_list:
                 decision_tree = self.decision_tree_map.get('R')   
-                print "1,%s,%s" % (object_name, self.classify(object_name, self.important_features_list, 0, decision_tree))        
+                print "%s,%s" % (object_name, self.classify(object_name, self.important_features_list, 0, decision_tree))        
     
     def main(self):
         self.training_phase()
